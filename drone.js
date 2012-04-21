@@ -9,6 +9,8 @@ for (var i = 0; i < bufferData.length; i++){
 	bufferData[i] = samp;
 }
 
+var gens = [];
+
 function createNoiseGen(freq){
 	var panner = context.createPanner();
 	var max = 20;
@@ -32,6 +34,7 @@ function createNoiseGen(freq){
 	bufferSource.gain = 0.2;
 	
 	bufferSource.noteOn(0);
+	gens.push(bufferSource);
 }
 
 var scale = [0.0, 2.0, 4.0, 6.0, 7.0, 9.0, 11.0, 12.0, 14.0];
