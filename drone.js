@@ -29,13 +29,13 @@ function createNoiseGen(freq){
 	bufferSource.loop = true;
 	bufferSource.buffer = buffer;
 	bufferSource.connect(filter);
-	bufferSource.gain = 0.2;
+	bufferSource.gain = 1.0;
 	bufferSource.playbackRate.value = 1 + rand(-0.1, 0.1);
 	
 	setInterval(function(){
-		x = x + rand(-0.5, 0.5);
-		y = y + rand(-0.5, 0.5);
-		z = z + rand(-0.5, 0.5);
+		x = x + rand(-0.1, 0.1);
+		y = y + rand(-0.1, 0.1);
+		z = z + rand(-0.1, 0.1);
 		panner.setPosition(x, y, z);
 	}, 500);
 	
