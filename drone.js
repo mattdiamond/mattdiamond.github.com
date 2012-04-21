@@ -9,6 +9,11 @@ for (var i = 0; i < bufferData.length; i++){
 	bufferData[i] = samp;
 }
 
+//connect gain
+var gain = context.createGainNode();
+gain.gain.value = 10.0;
+gain.connect(context.destination);
+
 function createNoiseGen(freq){
 	var panner = context.createPanner();
 	var max = 20;
@@ -17,7 +22,7 @@ function createNoiseGen(freq){
 	var y = rand(min, max);
 	var z = rand(min, max);
 	panner.setPosition(x, y, z);
-	panner.connect(context.destination);
+	panner.connect(gain);
 	
 	var filter = context.createBiquadFilter();
 	filter.type = 2; //bandpass
