@@ -9,7 +9,7 @@ for (var i = 0; i < bufferData.length; i++){
 	bufferData[i] = samp;
 }
 
-var gens = [];
+var panners = [];
 
 function createNoiseGen(freq){
 	var panner = context.createPanner();
@@ -20,6 +20,7 @@ function createNoiseGen(freq){
 	var z = Math.random() * (max - min) + min;
 	panner.setPosition(x, y, z);
 	panner.connect(context.destination);
+	panners.push(panner);
 	
 	var filter = context.createBiquadFilter();
 	filter.type = 2; //bandpass
@@ -34,7 +35,6 @@ function createNoiseGen(freq){
 	bufferSource.gain = 0.2;
 	
 	bufferSource.noteOn(0);
-	gens.push(bufferSource);
 }
 
 var scale = [0.0, 2.0, 4.0, 6.0, 7.0, 9.0, 11.0, 12.0, 14.0];
