@@ -11,7 +11,7 @@ for (var i = 0; i < bufferData.length; i++){
 
 //connect gain
 var gain = context.createGainNode();
-gain.gain.value = 10.0;
+gain.gain.value = 1.0;
 gain.connect(context.destination);
 
 function createNoiseGen(freq){
@@ -34,7 +34,7 @@ function createNoiseGen(freq){
 	bufferSource.loop = true;
 	bufferSource.buffer = buffer;
 	bufferSource.connect(filter);
-	bufferSource.gain = 1.0;
+	bufferSource.gain.value = 10.0;
 	bufferSource.playbackRate.value = 1 + rand(-0.1, 0.1);
 	
 	setInterval(function(){
