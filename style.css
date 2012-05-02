@@ -1,4 +1,8 @@
+@import url(http://fonts.googleapis.com/css?family=Raleway:100);
+@import url(http://fonts.googleapis.com/css?family=EB+Garamond:400);
+
 body {
+  font-family: 'EB Garamond', serif;
 	margin: 0;
 }
 
@@ -44,7 +48,6 @@ h2 {
 }
 
 #LeftMenu {
-	font-family: 'EB Garamond', serif;
 	margin-top: 20px;
 	padding: 20px 20px 20px 30px;
 	font-size: 24px;
@@ -72,7 +75,6 @@ h2 {
 }
 
 #Content {
-	font-family: 'EB Garamond', serif;
 	width: 750px;
 	margin: 50px 0 0 100px;
 	float: left;
