@@ -1,0 +1,84 @@
+body {
+	margin: 0;
+}
+
+h1, h2 {
+	font-family: 'Raleway', sans-serif;
+	font-weight: 100;
+}
+
+#Top {
+	overflow: hidden;
+}
+
+#TopHeader {
+	width: 1050px;
+	position: relative;
+	clear: both;
+	margin-bottom: 10px;
+}
+
+h1 {
+	margin: 50px 0 0 40px;
+	display: none;
+	font-size: 40px;
+	position: relative;
+	bottom: -10px;
+}
+
+h2 {
+	position: absolute;
+	bottom: -6px;
+	right: 50px;
+	margin: 0;
+	display: none;
+}
+
+#Topline {
+	width: 100px;
+	opacity: 0;
+	float: left;
+	border: 1px solid black;
+	border-bottom: 0;
+	margin: 0;
+}
+
+#LeftMenu {
+	font-family: 'EB Garamond', serif;
+	margin-top: 20px;
+	padding: 20px 20px 20px 30px;
+	font-size: 24px;
+	float: left;
+}
+
+#LeftMenu a {
+	display: block;
+	text-decoration: none;
+	color: black;
+	opacity: 0;
+	margin: 10px;
+	position: relative;
+
+ -moz-transition: color 0.3s ease-out;  
+   -o-transition: color 0.3s ease-out;  
+-webkit-transition: color 0.3s ease-out;  
+  -ms-transition: color 0.3s ease-out;  
+	  transition: color 0.3s ease-out;  
+
+}
+
+#LeftMenu a:hover {
+	color: #04a;
+}
+
+#Content {
+	font-family: 'EB Garamond', serif;
+	width: 750px;
+	margin: 50px 0 0 100px;
+	float: left;
+	font-size: 18px;
+}
+
+#Content div {
+	display: none;
+}
