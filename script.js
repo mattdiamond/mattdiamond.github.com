@@ -1,4 +1,4 @@
-$(function () {
+function init(){
   $('h1').fadeIn('slow', function () {
     $('#Topline').animate({ width:'100%', opacity:1 }, 1000, function () {
       $('h2').fadeIn('slow');
@@ -20,9 +20,9 @@ $(function () {
   $(window).bind('hashchange', function () {
     loadSection(window.location.hash.substring(1));
   });
-});
+}
 
-function loadSection(section) {
+function loadSection(section){
   var elem = $('#Content .' + section);
   if (elem.is(':hidden')) {
     $('#Content div:visible').fadeOut('fast', function () {
@@ -30,3 +30,5 @@ function loadSection(section) {
     });
   }
 }
+
+$(init);
