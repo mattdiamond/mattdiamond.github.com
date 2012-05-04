@@ -5,8 +5,6 @@ function init(){
     });
   });
 
-  $('#Content .about').fadeIn('slow');
-
   $('#LeftMenu a').each(function () {
     var top = 100 - $(this).position().top;
     $(this).css('top', top).animate({ opacity:1, top:0 }, 1000);
@@ -18,8 +16,23 @@ function init(){
   });
 
   $(window).bind('hashchange', function () {
-    loadSection(window.location.hash.substring(1));
+    loadSection(getHash());
   });
+
+  if (window.location.hash){
+    var elem = $('#Content .' + getHash());
+    if (elem.length){
+      elem.fadeIn('slow');
+    } else {
+      $('#Content .about').fadeIn('slow');
+    }
+  } else {
+    $('#Content .about').fadeIn('slow');
+  }
+}
+
+function getHash(){
+  return window.location.hash.substring(1);
 }
 
 function loadSection(section){
