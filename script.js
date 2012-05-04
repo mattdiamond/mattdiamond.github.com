@@ -15,7 +15,7 @@ function init(){
     loadSection(section);
   });
 
-  $(window).bind('hashchange', function () {
+  $(window).on('hashchange', function () {
     loadSection(getHash());
   });
 
