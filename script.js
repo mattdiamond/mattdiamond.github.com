@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(function () {
   $('h1').fadeIn('slow', function () {
     $('#Topline').animate({ width:'100%', opacity:1 }, 1000, function () {
       $('h2').fadeIn('slow');
@@ -20,7 +20,6 @@ $(document).ready(function () {
   $(window).bind('hashchange', function () {
     loadSection(window.location.hash.substring(1));
   });
-
 });
 
 function loadSection(section) {
