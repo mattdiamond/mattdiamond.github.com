@@ -1,4 +1,4 @@
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:300);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:300,400,600);
 
 body {
   font-family: 'Open Sans', sans-serif;
@@ -8,6 +8,11 @@ body {
 
 h1, h2 {
 	font-weight: 300;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
 }
 
 #Top {
@@ -70,7 +75,8 @@ h2 {
 
 }
 
-#LeftMenu a:hover {
+#LeftMenu a:hover,
+#LeftMenu a.selected {
 	color: #04a;
 }
 

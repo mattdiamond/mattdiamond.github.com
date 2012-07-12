@@ -10,7 +10,7 @@ function init(){
     $(this).css('top', top).animate({ opacity:1, top:0 }, 1000);
   });
 
-  $('#LeftMenu a').click(function () {
+  $('#LeftMenu').on('click', 'a', function () {
     var section = $(this).data('section');
     loadSection(section);
   });
@@ -20,12 +20,7 @@ function init(){
   });
 
   if (window.location.hash){
-    var elem = $('#Content .' + getHash());
-    if (elem.length){
-      elem.fadeIn('slow');
-    } else {
-      $('#Content .about').fadeIn('slow');
-    }
+    loadSection(getHash(), true);
   } else {
     $('#Content .about').fadeIn('slow');
   }
@@ -35,13 +30,18 @@ function getHash(){
   return window.location.hash.substring(1);
 }
 
-function loadSection(section){
+function loadSection(section, firstLoad){
   var elem = $('#Content .' + section);
-  if (elem.is(':hidden')) {
+  if (!elem.length) elem = $('#Content .about');
+  if (firstLoad){
+    elem.fadeIn('slow');
+  } else if (elem.is(':hidden')) {
     $('#Content div:visible').fadeOut('fast', function () {
       elem.fadeIn('fast');
     });
   }
+  $("#LeftMenu a").removeClass('selected');
+  $("#LeftMenu [data-section='"+section+"']").addClass('selected');
 }
 
 $(init);
