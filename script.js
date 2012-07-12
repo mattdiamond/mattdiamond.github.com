@@ -22,7 +22,7 @@ function init(){
   if (window.location.hash){
     loadSection(getHash(), true);
   } else {
-    $('#Content .about').fadeIn('slow');
+    loadSection('about', true);
   }
 }
 
@@ -32,7 +32,10 @@ function getHash(){
 
 function loadSection(section, firstLoad){
   var elem = $('#Content .' + section);
-  if (!elem.length) elem = $('#Content .about');
+  if (!elem.length){
+    elem = $('#Content .about');
+    section = 'about';
+  }
   if (firstLoad){
     elem.fadeIn('slow');
   } else if (elem.is(':hidden')) {
