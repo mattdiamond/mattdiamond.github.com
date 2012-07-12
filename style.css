@@ -1,14 +1,13 @@
-@import url(http://fonts.googleapis.com/css?family=Raleway:100);
-@import url(http://fonts.googleapis.com/css?family=EB+Garamond:400);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:300);
 
 body {
-  font-family: 'EB Garamond', serif;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 300;
 	margin: 0;
 }
 
 h1, h2 {
-	font-family: 'Raleway', sans-serif;
-	font-weight: 100;
+	font-weight: 300;
 }
 
 #Top {
@@ -27,12 +26,13 @@ h1 {
 	display: none;
 	font-size: 40px;
 	position: relative;
-	bottom: -10px;
+	bottom: -12px;
+  letter-spacing: -1px;
 }
 
 h2 {
 	position: absolute;
-	bottom: -6px;
+	bottom: -7px;
 	right: 50px;
 	margin: 0;
 	display: none;
