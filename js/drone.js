@@ -2,7 +2,7 @@ var context = new webkitAudioContext();
 
 //connect gain
 var gain = context.createGainNode();
-gain.gain.value = 10.0;
+gain.gain.value = 15.0;
 gain.connect(context.destination);
 
 var noiseNodes = [];
@@ -18,12 +18,12 @@ function createNoiseGen(freq) {
   panner.connect(gain);
 
   var filter = context.createBiquadFilter();
-  filter.type = 2; //bandpass
+  filter.type = filter.BANDPASS;
   filter.frequency.value = freq;
   filter.Q.value = 150;
   filter.connect(panner);
 
-  var noiseSource = context.createJavaScriptNode(1024, 0, 2);
+  var noiseSource = context.createJavaScriptNode(1024, 1, 2);
   noiseSource.onaudioprocess = function (e) {
     var outBufferL = e.outputBuffer.getChannelData(0);
     var outBufferR = e.outputBuffer.getChannelData(1);
@@ -44,14 +44,16 @@ function createNoiseGen(freq) {
 }
 
 var scale = [0.0, 2.0, 4.0, 6.0, 7.0, 9.0, 11.0, 12.0, 14.0];
-var base_note = 63;
-var num_osc = 40;
 
-for (var i = 0; i < num_osc; i++) {
-  var degree = Math.floor(Math.random() * scale.length);
-  var freq = mtof(base_note + scale[degree]);
-  freq += Math.random() * 4 - 2;
-  createNoiseGen(freq);
+function generate(){
+  var base_note = parseInt($('#BaseNote').val());
+  var num_osc = parseInt($('#NumOsc').val());
+  for (var i = 0; i < num_osc; i++) {
+    var degree = Math.floor(Math.random() * scale.length);
+    var freq = mtof(base_note + scale[degree]);
+    freq += Math.random() * 4 - 2;
+    createNoiseGen(freq);
+  }
 }
 
 function mtof(m) {
@@ -61,3 +63,50 @@ function mtof(m) {
 function rand(min, max) {
   return Math.random() * (max - min) + min;
 }
+
+function reset(){
+  while (noiseNodes.length){
+    noiseNodes.pop().disconnect();
+  }
+  generate(parseInt($('#BaseNote').val()));
+}
+
+function bindEvents(){
+  var controls = $(".control");
+  controls.each(function(){
+    $(this).data('lastVal', $(this).val());
+    var id = $(this).attr('id');
+    $("label[for='"+id+"'] .controlVal").text($(this).val());
+  });
+
+  controls.mouseup(function(){
+    var control = $(this);
+    var val = control.val();
+    if (val !== control.data('lastVal')){
+      control.data('lastVal', val);
+      reset();
+    }
+  });
+
+  controls.change(function(){
+    var id = $(this).attr('id');
+    $("label[for='"+id+"'] .controlVal").text($(this).val());
+  })
+}
+
+function showIntro(line){
+  line = line || $(".intro p").first();
+
+  line.fadeIn(700, function(){
+    var next = $(this).next();
+    if (next.length){
+      setTimeout(showIntro, 500, next);
+    }
+  });
+}
+
+$(function(){
+  generate();
+  bindEvents();
+  showIntro();
+});

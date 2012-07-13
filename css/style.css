@@ -15,6 +15,10 @@ ul {
   padding: 0;
 }
 
+li {
+  margin: 10px 0;
+}
+
 #Top {
 	overflow: hidden;
 }
@@ -89,4 +93,44 @@ h2 {
 
 #Content div {
 	display: none;
+}
+
+#DroneTest {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -200px;
+  margin-left: -410px;
+  height: 300px;
+  width: 800px;
+  font-size: 18px;
+}
+
+#DroneTest .intro {
+  float: left;
+  width: 400px;
+}
+
+#DroneTest .intro p {
+  display: none;
+}
+
+#DroneTest .controls {
+  width: 350px;
+  padding-left: 50px;
+  padding-top: 25px;
+  float: right;
+}
+
+#DroneTest .controls label {
+  display: block;
+  font-size: 14px;
+}
+
+#DroneTest .controls input[type='range']{
+  width: 300px;
+}
+
+#DroneTest .sliderVal {
+  font-weight: 400;
 }
