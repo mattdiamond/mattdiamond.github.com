@@ -112,7 +112,7 @@ h2 {
 }
 
 #DroneTest .intro p {
-  display: none;
+  opacity: 0;
 }
 
 #DroneTest .controls {

@@ -97,7 +97,7 @@ function bindEvents(){
 function showIntro(line){
   line = line || $(".intro p").first();
 
-  line.fadeIn(700, function(){
+  line.transition({ opacity: 1 }, 700, function(){
     var next = $(this).next();
     if (next.length){
       setTimeout(showIntro, 500, next);
@@ -105,7 +105,14 @@ function showIntro(line){
   });
 }
 
+function setUpAnimateFallback(){
+  if (!$.support.transition){
+    $.fn.transition = $.fn.animate;
+  }
+}
+
 $(function(){
+  setUpAnimateFallback();
   generate();
   bindEvents();
   showIntro();
