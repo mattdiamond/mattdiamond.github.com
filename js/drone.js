@@ -68,7 +68,7 @@ function reset(){
   while (noiseNodes.length){
     noiseNodes.pop().disconnect();
   }
-  generate(parseInt($('#BaseNote').val()));
+  generate();
 }
 
 function bindEvents(){
