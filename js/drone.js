@@ -6,6 +6,7 @@ gain.gain.value = 15.0;
 gain.connect(context.destination);
 
 var noiseNodes = [];
+var bufferLen = 4096;
 
 function createNoiseGen(freq) {
   var panner = context.createPanner();
@@ -23,11 +24,11 @@ function createNoiseGen(freq) {
   filter.Q.value = 150;
   filter.connect(panner);
 
-  var noiseSource = context.createJavaScriptNode(1024, 1, 2);
+  var noiseSource = context.createJavaScriptNode(bufferLen, 1, 2);
   noiseSource.onaudioprocess = function (e) {
     var outBufferL = e.outputBuffer.getChannelData(0);
     var outBufferR = e.outputBuffer.getChannelData(1);
-    for (var i = 0; i < 1024; i++) {
+    for (var i = 0; i < bufferLen; i++) {
       outBufferL[i] = outBufferR[i] = Math.random() * 2 - 1;
     }
   };
@@ -79,7 +80,7 @@ function bindEvents(){
     $("label[for='"+id+"'] .controlVal").text($(this).val());
   });
 
-  controls.mouseup(function(){
+  controls.on('mouseup keyup', function(){
     var control = $(this);
     var val = control.val();
     if (val !== control.data('lastVal')){
