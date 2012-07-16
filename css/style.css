@@ -19,6 +19,10 @@ li {
   margin: 10px 0;
 }
 
+.center-align {
+  text-align: center;
+}
+
 .contact {
   font-size: 15px;
   margin-top: 70px;
@@ -43,6 +47,10 @@ h1 {
 	position: relative;
 	bottom: -12px;
   letter-spacing: -1px;
+}
+
+h1.visible {
+  display: block;
 }
 
 h2 {
@@ -139,4 +147,9 @@ h2 {
 
 #DroneTest .sliderVal {
   font-weight: 400;
+}
+
+.pageHeader {
+  font-size: 40px;
+  margin: 50px 0;
 }
