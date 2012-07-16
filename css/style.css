@@ -149,7 +149,15 @@ h2 {
   font-weight: 400;
 }
 
-.pageHeader {
+#EverythingAllAtOnce {
+  text-align: center;
+}
+
+#EverythingAllAtOnce .pageHeader {
   font-size: 40px;
   margin: 50px 0;
+}
+
+#EverythingAllAtOnce .instructions {
+  margin-bottom: 10px;
 }
