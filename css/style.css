@@ -42,9 +42,15 @@ li {
   border-bottom: 1px solid #ccc;
 }
 
+.animated {
+  -webkit-animation-duration: 2s;
+  -moz-animation-duration: 2s;
+  -o-animation-duration: 2s;
+  animation-duration: 2s;
+}
+
 h1 {
 	margin: 50px 0 0 40px;
-	display: none;
 	font-size: 40px;
 	position: relative;
 	bottom: -12px;
@@ -60,7 +66,6 @@ h2 {
 	bottom: -7px;
 	right: 50px;
 	margin: 0;
-	display: none;
 }
 
 #LeftMenu {

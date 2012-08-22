@@ -1,7 +1,4 @@
 function init(){
-  $('h1').fadeIn('slow', function () {
-    $('h2').fadeIn('slow');
-  });
 
   $('#LeftMenu').on('click', 'a', function () {
     var section = $(this).data('section');
