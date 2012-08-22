@@ -1,13 +1,6 @@
 function init(){
   $('h1').fadeIn('slow', function () {
-    $('#Topline').animate({ width:'100%', opacity:1 }, 1000, function () {
-      $('h2').fadeIn('slow');
-    });
-  });
-
-  $('#LeftMenu a').each(function () {
-    var top = 100 - $(this).position().top;
-    $(this).css('top', top).animate({ opacity:1, top:0 }, 1000);
+    $('h2').fadeIn('slow');
   });
 
   $('#LeftMenu').on('click', 'a', function () {
