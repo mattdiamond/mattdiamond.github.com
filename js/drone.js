@@ -4,6 +4,7 @@ var context = new webkitAudioContext();
 var gain = context.createGainNode();
 gain.gain.value = 15.0;
 gain.connect(context.destination);
+var recorder = new Recorder(gain);
 
 var noiseNodes = [];
 var bufferLen = 4096;
@@ -94,9 +95,9 @@ function bindEvents(){
     $("label[for='"+id+"'] .controlVal").text($(this).val());
   });
 
-  $('#StartRec').click(startRecording);
-  $('#StopRec').click(stopRecording);
-  $('#Export').click(exportWAV);
+  $('#StartRec').click(recorder.record);
+  $('#StopRec').click(recorder.stop);
+  $('#Export').click(recorder.exportWAV);
 }
 
 function showIntro(line){
@@ -122,67 +123,3 @@ $(function(){
   bindEvents();
   showIntro();
 });
-
-/* recording */
-
-var recBuffers = [];
-var recLength = 0;
-var recording = false;
-
-var captureNode = context.createJavaScriptNode(bufferLen, 2, 2);
-gain.connect(captureNode);
-captureNode.connect(context.destination);
-
-captureNode.onaudioprocess = function(e){
-  if (!recording) return;
-  var bufferL = e.inputBuffer.getChannelData(0);
-  var bufferR = e.inputBuffer.getChannelData(1);
-  var interleaved = interleave(bufferL, bufferR);
-  recBuffers.push(interleaved);
-}
-
-function interleave(inputL, inputR){
-  var length = inputL.length + inputR.length;
-  var result = new Float32Array(length);
-
-  var index = 0,
-      inputIndex = 0;
-
-  while (index < length){
-    result[index++] = inputL[inputIndex];
-    result[index++] = inputR[inputIndex];
-    inputIndex++;
-  }
-  recLength += length;
-  return result;
-}
-
-function mergeBuffers(){
-  var result = new Float32Array(recLength);
-  var offset = 0;
-  for (var i = 0; i < recBuffers.length; i++){
-    result.set(recBuffers[i], offset);
-    offset += recBuffers[i].length;
-  }
-  return result;
-}
-
-function startRecording(){
-  recording = true;
-}
-
-function stopRecording(){
-  recording = false;
-}
-
-function exportWAV(){
-  var buffer = mergeBuffers();
-  var waveData    = PCMData.encode({
-    sampleRate: 44100,
-    channelCount:   2,
-    bytesPerSample: 1,
-    data:       buffer
-  });
-  var uri = "data:application/octet-stream;base64," + btoa(waveData);
-  window.open(uri);
-}
