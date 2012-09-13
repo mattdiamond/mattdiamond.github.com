@@ -5,6 +5,7 @@ var gain = context.createGainNode();
 gain.gain.value = 15.0;
 gain.connect(context.destination);
 var recorder = new Recorder(gain);
+recorder.configure({ type: 'application/octet-stream' });
 
 var noiseNodes = [];
 var bufferLen = 4096;
@@ -98,9 +99,8 @@ function bindEvents(){
   $('#StartRec').click(recorder.record);
   $('#StopRec').click(recorder.stop);
   $('#Export').click(function(){
-    var w = window.open('data:,Please wait...');
     recorder.exportWAV(function(blob){
-      w.location = webkitURL.createObjectURL(blob);
+      Recorder.forceDownload(blob);
     });
   });
 }
