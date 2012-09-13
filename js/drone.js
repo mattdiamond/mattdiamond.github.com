@@ -97,7 +97,12 @@ function bindEvents(){
 
   $('#StartRec').click(recorder.record);
   $('#StopRec').click(recorder.stop);
-  $('#Export').click(recorder.exportWAV);
+  $('#Export').click(function(){
+    var w = window.open('data:,Please wait...');
+    recorder.exportWAV(function(blob){
+      w.location = webkitURL.createObjectURL(blob);
+    });
+  });
 }
 
 function showIntro(line){
