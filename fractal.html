@@ -18,7 +18,7 @@
             length: 10
           });
           path.lineBy(vector);
-          angle = (angle + 2 * Math.PI * (++i) * constant);
+          angle = angle + 2 * Math.PI * ++i * constant;
         }
         if (!view.bounds.contains(path.bounds)) view.zoom *= 0.99;
       };
