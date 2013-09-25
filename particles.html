@@ -15,8 +15,10 @@
   <script type='text/javascript'>
     var camera, scene, renderer, particles;
 
-    init();
-    animate();
+    window.addEventListener('load', function(){
+      init();
+      animate();
+    }, false);
 
     function init() {
 
