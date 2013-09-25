@@ -73,6 +73,7 @@
 
     }
 
+    var frame = 0;
     function render() {
 
       var time = Date.now() * 0.00025;
@@ -81,22 +82,24 @@
       particles.rotation.x = time;
       particles.rotation.z = time;
 
-      var vertices = particles.geometry.vertices,
-          colors = particles.geometry.colors,
-          len = vertices.length,
-          vector;
+      if (frame > 200){
+        var vertices = particles.geometry.vertices,
+            colors = particles.geometry.colors,
+            len = vertices.length,
+            vector;
 
-      for (var i = 0; i < len; i++){
-        vector = vertices[i];
-        vector.x += (colors[i].r - 0.5) * 0.05;
-        vector.y += (colors[i].g - 0.5) * 0.05;
-        vector.z += (colors[i].b - 0.5) * 0.05;
+        for (var i = 0; i < len; i++){
+          vector = vertices[i];
+          vector.x += (colors[i].r - 0.5) * 0.05;
+          vector.y += (colors[i].g - 0.5) * 0.05;
+          vector.z += (colors[i].b - 0.5) * 0.05;
+        }
+
+        particles.geometry.verticesNeedUpdate = true;
       }
 
-      particles.geometry.verticesNeedUpdate = true;
-
       renderer.render(scene, camera);
-
+      frame++;
     }
   </script>
 </head>
