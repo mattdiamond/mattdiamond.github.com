@@ -1,8 +1,8 @@
-var context = new webkitAudioContext();
+var context = new AudioContext();
 
 //connect gain
-var gain = context.createGainNode();
-gain.gain.value = 15.0;
+var gain = context.createGain();
+gain.gain.value = 0.25;
 gain.connect(context.destination);
 var recorder = new Recorder(gain);
 
@@ -22,10 +22,10 @@ function createNoiseGen(freq) {
   var filter = context.createBiquadFilter();
   filter.type = filter.BANDPASS;
   filter.frequency.value = freq;
-  filter.Q.value = 150;
+  filter.Q.value = 50;
   filter.connect(panner);
 
-  var noiseSource = context.createJavaScriptNode(bufferLen, 1, 2);
+  var noiseSource = context.createScriptProcessor(bufferLen, 1, 2);
   noiseSource.onaudioprocess = function (e) {
     var outBufferL = e.outputBuffer.getChannelData(0);
     var outBufferR = e.outputBuffer.getChannelData(1);
