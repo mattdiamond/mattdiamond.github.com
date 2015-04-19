@@ -27,7 +27,8 @@
 
             synth.toMaster();
 
-            var ws = new WebSocket('wss://wss.redditmedia.com/thebutton?h=6986d10ce1927d1843845051b10065f4e9aee3c2&e=1429391946');
+            var socketUrl = 'wss://wss.redditmedia.com/thebutton?h=a1a82e9bf74ed190ad33db90492945b1fe71dec4&e=1429555136';
+            var ws = new WebSocket(socketUrl);
 
             ws.onmessage = function(e){
                 var seconds = $.parseJSON(e.data).payload.seconds_left;
