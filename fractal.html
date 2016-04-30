@@ -45,8 +45,7 @@
 
 			//set up GUI
 			var gui = new dat.GUI();
-			var constCtrl = gui.add(fractal, 'constant', constantOpts);
-			var customCtrl = gui.add(fractal, 'customConstant');
+			var constCtrl = gui.add(fractal, 'constant');
 			gui.add(fractal, 'iterationsPerFrame', 1, 30).step(1);
 			gui.addColor(fractal, 'strokeColor');
 			gui.add(fractal, 'strokeWidth');
@@ -54,28 +53,20 @@
 //			gui.add(fractal, 'simplify');
 			gui.add(fractal, 'reset');
 
-			var $customCtrl = $(customCtrl.__li).hide();
-
 			constCtrl.onFinishChange(function(value){
-				if (value === 'custom'){
-					$customCtrl.show();
-				} else {
-					$customCtrl.hide();
+				try {
+					fractal.calculatedConstant = math.eval(value);
+					fractal.reset();
+				} catch (e){
+					alert('Could not calculate "' + value + '"');
 				}
-				fractal.reset();
-			});
-
-			customCtrl.onFinishChange(function(value){
-				fractal.actualCustom = value;
-				fractal.reset();
 			});
 		}
 
 		function Fractal(){
-			this.constant = Math.SQRT1_2;
-			this.customConstant = '';
-			this.actualCustom = '';
-			this.iterationsPerFrame = 10;
+			this.constant = '1.23456 * phi';
+			this.calculatedConstant = math.eval(this.constant);
+			this.iterationsPerFrame = 15;
 			this.paused = false;
 			this.strokeColor = '#000000';
 			this.strokeWidth = 1;
@@ -102,22 +93,17 @@
 				this.path.strokeColor = this.strokeColor;
 				this.path.strokeWidth = this.strokeWidth;
 
-				var constant;
-				if (this.constant === 'custom'){
-					constant = math.eval(this.actualCustom);
-				} else {
-					constant = this.constant;
-				}
 				for (var x = 0; x < this.iterationsPerFrame; x++) {
 					var vector = new Point({
 						angle: -angle * (180 / Math.PI),
 						length: 10
 					});
 					this.path.lineBy(vector);
-					angle += 2 * Math.PI * ++i * constant;
+					//the magic equation
+					angle += 2 * Math.PI * ++i * this.calculatedConstant;
 				}
 
-				if (!view.bounds.contains(this.path.bounds)) view.zoom *= 0.99;
+				if (!view.bounds.contains(this.path.bounds)) view.zoom *= 0.98;
 			}.bind(this);
 		};
 
