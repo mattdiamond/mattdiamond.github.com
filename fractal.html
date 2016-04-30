@@ -1,41 +1,111 @@
 <!DOCTYPE html>
+<html>
 <head>
-  <meta charset='utf-8'>
-  <script type='text/javascript' src='js/paper-min.js'></script>
-  <script type='text/javascript'>
-    paper.install(window);
-    window.onload = function(){
-      myCanvas.width = window.innerWidth;
-      myCanvas.height = window.innerHeight;
-      paper.setup('myCanvas');
-      path = new Path({ strokeColor : 'black'});
-      path.add(view.center);
-      var angle = 0, i = 0, iter = 20, constant = Math.SQRT1_2;
-      view.onFrame = function(){
-        for (var x = 0; x < iter; x++){
-          var vector = new Point({
-            angle: -angle * (180 / Math.PI),
-            length: 10
-          });
-          path.lineBy(vector);
-          angle = angle + 2 * Math.PI * ++i * constant;
-        }
-        if (!view.bounds.contains(path.bounds)) view.zoom *= 0.99;
-      };
-    }
-  </script>
-  <style type='text/css'>
-    html, body {
-      height: 100%;
-      width: 100%;
-      margin: 0;
-      padding: 0;
-    }
-    canvas {
-      float: left;
-    }
-  </style>
+	<meta charset="utf-8">
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.2.1/math.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.9.25/paper-core.min.js"></script>
+	<script type="text/javascript">
+		var constantOpts = {
+			'e': Math.E,
+			'ln(2)': Math.LN2,
+			'ln(10)': Math.LN10,
+			'log\u2082(e)': Math.LOG2E,
+			'log\u2081\u2080(e)': Math.LOG10E,
+			'pi': Math.PI,
+			'sqrt(1/2)': Math.SQRT1_2,
+			'sqrt(2)': Math.SQRT2
+		};
+
+		function init(){
+			setUpPaper();
+			initFractal();
+		}
+
+		function setUpPaper(){
+			myCanvas.width = window.innerWidth;
+			myCanvas.height = window.innerHeight;
+			paper.install(window);
+			paper.setup('myCanvas');
+		}
+
+		function initFractal(){
+			var fractal = new Fractal();
+			fractal.draw();
+
+			//set up GUI
+			var gui = new dat.GUI();
+			var constCtrl = gui.add(fractal, 'constant', constantOpts);
+			gui.add(fractal, 'iterationsPerFrame', 1, 30).step(1);
+			gui.addColor(fractal, 'strokeColor');
+			gui.add(fractal, 'strokeWidth');
+			gui.add(fractal, 'paused');
+//			gui.add(fractal, 'simplify');
+			gui.add(fractal, 'reset');
+
+			constCtrl.onFinishChange(function(){
+				fractal.reset();
+			});
+		}
+
+		function Fractal(){
+			this.constant = Math.SQRT1_2;
+			this.iterationsPerFrame = 10;
+			this.paused = false;
+			this.strokeColor = '#000000';
+			this.strokeWidth = 1;
+			this.paused = false;
+//			this.simplify = function(){
+//				this.path.simplify();
+//			};
+			this.reset = function(){
+				this.path.remove();
+				this.draw();
+			};
+		}
+
+		Fractal.prototype.draw = function(){
+			view.zoom = 1;
+			this.path = new Path({ strokeColor: 'black'});
+			this.path.add(view.center);
+			var angle = 0, i = 0;
+			view.onFrame = function(){
+				if (this.paused) return;
+
+				this.path.strokeColor = this.strokeColor;
+				this.path.strokeWidth = this.strokeWidth;
+
+				var constant = math.compile(this.constant);
+				for (var x = 0; x < this.iterationsPerFrame; x++) {
+					var vector = new Point({
+						angle: -angle * (180 / Math.PI),
+						length: 10
+					});
+					this.path.lineBy(vector);
+					angle += 2 * Math.PI * ++i * constant.eval();
+				}
+
+				if (!view.bounds.contains(this.path.bounds)) view.zoom *= 0.99;
+			}.bind(this);
+		};
+
+		$(init);
+	</script>
+	<style type="text/css">
+		html, body {
+			height: 100%;
+			width: 100%;
+			margin: 0;
+			padding: 0;
+		}
+
+		canvas {
+			float: left;
+		}
+	</style>
 </head>
 <body>
-  <canvas id='myCanvas'></canvas>
+<canvas id="myCanvas"></canvas>
 </body>
+</html>
