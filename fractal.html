@@ -2,6 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
+	<title>Curlicue Fractal Generator</title>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.2.1/math.min.js"></script>
@@ -98,7 +99,7 @@
 						angle: -angle * (180 / Math.PI),
 						length: 10
 					});
-					this.path.lineBy(vector);
+					console.log(this.path.lineBy(vector));
 					//the magic equation
 					angle += 2 * Math.PI * ++i * this.calculatedConstant;
 				}
