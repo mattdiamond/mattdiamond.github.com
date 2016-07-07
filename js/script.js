@@ -15,7 +15,7 @@ function init() {
 		loadSection('about', true);
 	}
 
-	$('.whoa').whoa();
+	//$('.whoa').whoa();
 }
 
 function getHash() {
