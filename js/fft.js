@@ -29,8 +29,8 @@ function bindFileInput(){
 
 function processBuffer(buffer){
 	console.log('running fft...');
-	var processedL = fft.frequencyMap(buffer.getChannelData(0), randomPhase);
-	var processedR = fft.frequencyMap(buffer.getChannelData(1), randomPhase);
+	var processedL = fft.frequencyMap(buffer.getChannelData(0), mapFunc);
+	var processedR = fft.frequencyMap(buffer.getChannelData(1), mapFunc);
 
 	buffer.copyToChannel(processedL.real, 0);
 	buffer.copyToChannel(processedR.real, 1);
@@ -42,6 +42,6 @@ function processBuffer(buffer){
 	source.start();
 }
 
-function randomPhase(obj, i, n){
+function mapFunc(obj, i, n){
 	obj.real /= 2;
 }
