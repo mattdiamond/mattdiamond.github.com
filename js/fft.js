@@ -35,7 +35,9 @@ function processBuffer(buffer){
 	source.start();
 }
 
+var arr1 = [], arr2 = [];
+
 function randomPhase(obj, i, n){
-	console.log(i, n);
+	arr1.push(i); arr2.push(n);
 	//if (i < 10) obj.real = 0;
 }
