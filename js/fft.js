@@ -1,6 +1,5 @@
 var fileReader = new FileReader(),
-	context = new AudioContext(),
-	analyser = context.createAnalyser();
+	context = new AudioContext();
 
 fileReader.onload = function(){
 	console.log('decoding...');
@@ -9,74 +8,34 @@ fileReader.onload = function(){
 	});
 };
 
-function processBuffer(buffer){
-	bufferSource = context.createBufferSource();
-	bufferSource.buffer = buffer;
-	//bufferSource.connect(context.destination);
-	bufferSource.connect(analyser);
-	bufferSource.start();
-}
-
-function grab(fftSize){
-	analyser.fftSize = fftSize || 2048;
-	var result = new Float32Array(analyser.frequencyBinCount);
-	analyser.getFloatFrequencyData(result);
-	playSound(result);
-}
+window.onload = function(){
+	bindFileInput();
+};
 
 function bindFileInput(){
-	$('#FileInput').change(function(){
+	var fileInput = document.getElementById('FileInput');
+	fileInput.onchange = function(){
 		var file = this.files[0];
 		fileReader.readAsArrayBuffer(file);
-	});
+	};
 }
 
-var compressor = context.createDynamicsCompressor();
-compressor.connect(context.destination);
+function processBuffer(buffer){
+	console.log('running fft...');
+	var processedL = fft.frequencyMap(buffer.getChannelData(0), randomPhase);
+	var processedR = fft.frequencyMap(buffer.getChannelData(1), randomPhase);
 
-var units = [];
+	buffer.copyToChannel(processedL.real, 0);
+	buffer.copyToChannel(processedR.real, 1);
 
-function reset(){
-	while (units.length){
-		var unit = units.pop();
-		unit.osc.stop();
-		unit.osc.disconnect();
-		unit.gain.disconnect();
-	}
+	var source = context.createBufferSource();
+	source.buffer = buffer;
+	source.connect(context.destination);
+	console.log('starting buffer...');
+	source.start();
 }
 
-function playSound(result){
-	reset();
-
-	var osc, gain;
-	var min = Math.min.apply(Math, result),
-		max = Math.max.apply(Math, result);
-
-	$.each(result, function(i, db){
-		osc = context.createOscillator();
-		osc.frequency.value = binToFreq(i + 1);
-
-		gain = context.createGain();
-		gain.gain.value = scale(db, min, max);
-		console.log(osc.frequency.value + ': ' + gain.gain.value);
-
-		osc.connect(gain);
-		gain.connect(compressor);
-
-		units.push({ osc: osc, gain: gain });
-
-		osc.start();
-	});
+function randomPhase(obj, i, n){
+	console.log(i, n);
+	//if (i < 10) obj.real = 0;
 }
-
-function binToFreq(bin){
-	return bin * (context.sampleRate / analyser.fftSize);
-}
-
-function scale(num, min, max){
-	return (num - min) / (max - min);
-}
-
-$(function(){
-	bindFileInput();
-});
