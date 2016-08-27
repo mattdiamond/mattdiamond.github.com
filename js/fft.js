@@ -1,5 +1,6 @@
 var fileReader = new FileReader(),
-	context = new AudioContext();
+	context = new AudioContext(),
+	sampleRate = context.sampleRate;
 
 fileReader.onload = function(){
 	console.log('decoding...');
@@ -10,6 +11,12 @@ fileReader.onload = function(){
 
 window.onload = function(){
 	bindFileInput();
+
+	fetch('/samples/sufjan.wav').then(function(response){
+		return response.arrayBuffer();
+	}).then(function(arrayBuffer){
+		return context.decodeAudioData(arrayBuffer);
+	}).then(processBuffer);
 };
 
 function bindFileInput(){
@@ -35,9 +42,6 @@ function processBuffer(buffer){
 	source.start();
 }
 
-var arr1 = [], arr2 = [];
-
 function randomPhase(obj, i, n){
-	arr1.push(i); arr2.push(n);
-	//if (i < 10) obj.real = 0;
+	obj.real /= 2;
 }
