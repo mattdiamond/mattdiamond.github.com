@@ -10,14 +10,22 @@ fileReader.onload = function(){
 };
 
 window.onload = function(){
-	bindFileInput();
+	//bindFileInput();
+
+	output('downloading audio sample (please wait)...')
 
 	fetch('/samples/sufjan.wav').then(function(response){
+		output('retrieving arraybuffer...');
 		return response.arrayBuffer();
 	}).then(function(arrayBuffer){
+		output('decoding audio data...');
 		return context.decodeAudioData(arrayBuffer);
 	}).then(processBuffer);
 };
+
+function output(text){
+	document.body.innerHTML += text + '<br>';
+}
 
 function bindFileInput(){
 	var fileInput = document.getElementById('FileInput');
@@ -28,7 +36,7 @@ function bindFileInput(){
 }
 
 function processBuffer(buffer){
-	console.log('running fft...');
+	output('running spectral processing...');
 	var processedL = fft.frequencyMap(buffer.getChannelData(0), mapFunc);
 	var processedR = fft.frequencyMap(buffer.getChannelData(1), mapFunc);
 
@@ -38,10 +46,10 @@ function processBuffer(buffer){
 	var source = context.createBufferSource();
 	source.buffer = buffer;
 	source.connect(context.destination);
-	console.log('starting buffer...');
+	output('starting bufferSource...');
 	source.start();
 }
 
 function mapFunc(obj, i, n){
-	obj.real /= 2;
+	obj.imag = Math.random() / 100;
 }
