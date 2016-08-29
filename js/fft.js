@@ -1,6 +1,5 @@
 var fileReader = new FileReader(),
-	context = new AudioContext(),
-	sampleRate = context.sampleRate;
+	context = new AudioContext();
 
 fileReader.onload = function(){
 	console.log('decoding...');
@@ -10,22 +9,16 @@ fileReader.onload = function(){
 };
 
 window.onload = function(){
-	//bindFileInput();
+	bindFileInput();
 
-	output('downloading audio sample (please wait)...')
-
-	fetch('/samples/sufjan.wav').then(function(response){
-		output('retrieving arraybuffer...');
-		return response.arrayBuffer();
-	}).then(function(arrayBuffer){
-		output('decoding audio data...');
-		return context.decodeAudioData(arrayBuffer);
-	}).then(processBuffer);
+//	fetch('/samples/sufjan.wav').then(function(response){
+//		output('retrieving arraybuffer...');
+//		return response.arrayBuffer();
+//	}).then(function(arrayBuffer){
+//		output('decoding audio data...');
+//		return context.decodeAudioData(arrayBuffer);
+//	}).then(processBuffer);
 };
-
-function output(text){
-	document.body.innerHTML += text + '<br>';
-}
 
 function bindFileInput(){
 	var fileInput = document.getElementById('FileInput');
@@ -36,20 +29,36 @@ function bindFileInput(){
 }
 
 function processBuffer(buffer){
-	output('running spectral processing...');
-	var processedL = fft.frequencyMap(buffer.getChannelData(0), mapFunc);
-	var processedR = fft.frequencyMap(buffer.getChannelData(1), mapFunc);
+	console.log('starting spectral processing...');
 
-	buffer.copyToChannel(processedL.real, 0);
-	buffer.copyToChannel(processedR.real, 1);
+	console.log(buffer.length);
+
+	var limit = 8000000;
+	console.log('processing left channel...');
+	var processedL = fft.frequencyMap(buffer.getChannelData(0).slice(0, limit), mapFunc);
+	console.log('processing right channel...');
+	var processedR = fft.frequencyMap(buffer.getChannelData(1).slice(0, limit), mapFunc);
+
+	console.log('spectral processing complete');
+
+	var outputBuffer = context.createBuffer(2, processedL.length, context.sampleRate);
+	outputBuffer.copyToChannel(processedL.real, 0);
+	outputBuffer.copyToChannel(processedR.real, 1);
 
 	var source = context.createBufferSource();
-	source.buffer = buffer;
+	source.buffer = outputBuffer;
+	source.loop = true;
 	source.connect(context.destination);
-	output('starting bufferSource...');
 	source.start();
 }
 
 function mapFunc(obj, i, n){
-	obj.imag = Math.random() / 100;
+	if (i % 10000 === 0){
+		console.log('processed '+i+'/'+n);
+	}
+	var amplitude = Math.sqrt(Math.pow(obj.imag, 2) + Math.pow(obj.real, 2));
+	var phase = Math.PI * 2 * Math.random();
+
+	obj.real = amplitude * Math.cos(phase);
+	obj.imag = amplitude * Math.sin(phase);
 }
