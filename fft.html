@@ -2,11 +2,21 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<script type="text/javascript" src="jsfft/lib/complex_array.js"></script>
-		<script type="text/javascript" src="jsfft/lib/fft.js"></script>
 		<script type="text/javascript" src="js/fft.js"></script>
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+		<style type="text/css">
+			body {
+				font-family: 'Open Sans', sans-serif;
+			}
+			.hidden { display: none; }
+		</style>
 	</head>
 <body>
 	<input type="file" id="FileInput">
+	<div class="hidden">
+		<button id="record">Record</button>
+		<button id="stop">Stop Recording and Process</button>
+	</div>
+	<div id="output"></div>
 </body>
 </html>

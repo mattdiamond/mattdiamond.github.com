@@ -1,24 +1,71 @@
 var fileReader = new FileReader(),
-	context = new AudioContext();
+	context = new AudioContext(),
+	fftWorker = new Worker('js/fft-worker.js');
+	getUserMedia = (navigator.getUserMedia
+					|| navigator.webkitGetUserMedia
+					|| navigator.mozGetUserMedia
+					|| navigator.msGetUserMedia).bind(navigator);
+
+var source;
 
 fileReader.onload = function(){
-	console.log('decoding...');
-	context.decodeAudioData(fileReader.result, function(buffer){
-		processBuffer(buffer);
-	});
+	reset();
+	output('decoding...');
+	context.decodeAudioData(fileReader.result, processBuffer);
 };
 
 window.onload = function(){
 	bindFileInput();
 
-//	fetch('/samples/sufjan.wav').then(function(response){
-//		output('retrieving arraybuffer...');
-//		return response.arrayBuffer();
-//	}).then(function(arrayBuffer){
-//		output('decoding audio data...');
-//		return context.decodeAudioData(arrayBuffer);
-//	}).then(processBuffer);
+	//getUserMedia({ audio: true }, setUpMediaRecorder, function(){});
 };
+
+function reset(){
+	if (source){
+		source.stop();
+		source.disconnect();
+	}
+	document.getElementById('output').innerHTML = '';
+}
+
+function setUpMediaRecorder(stream){
+	var record = document.getElementById('record'),
+		stop = document.getElementById('stop'),
+		source = context.createMediaStreamSource(stream),
+		recorder = context.createScriptProcessor(),
+		recording = false, chunkSize = recorder.bufferSize,
+		inputL, inputR;
+
+	source.connect(recorder);
+	recorder.connect(context.destination);
+
+	record.onclick = function(){
+		output('recording');
+		inputL = inputR = [];
+		recording = true;
+	};
+
+	stop.onclick = function(){
+		recording = false;
+
+		var arrayLength = inputL.length,
+			bufferLength = chunkSize * arrayLength,
+			buffer = context.createBuffer(2, bufferLength, context.sampleRate);
+
+		for (var i = 0; i < arrayLength; i++){
+			buffer.copyToChannel(inputL[i], 0, i * chunkSize);
+			buffer.copyToChannel(inputR[i], 1, i * chunkSize);
+		}
+
+		processBuffer(buffer);
+	};
+
+	recorder.onaudioprocess = function(e){
+		if (!recording) return;
+		inputL.push(e.inputBuffer.getChannelData(0));
+		inputR.push(e.inputBuffer.getChannelData(1));
+	};
+}
 
 function bindFileInput(){
 	var fileInput = document.getElementById('FileInput');
@@ -29,36 +76,33 @@ function bindFileInput(){
 }
 
 function processBuffer(buffer){
-	console.log('starting spectral processing...');
+	fftWorker.postMessage({
+		left: buffer.getChannelData(0),
+		right: buffer.getChannelData(1)
+	});
+}
 
-	console.log(buffer.length);
+fftWorker.addEventListener('message', function(e){
+	if (e.data.type === 'update'){
+		output(e.data.update);
+		return;
+	}
 
-	var limit = 8000000;
-	console.log('processing left channel...');
-	var processedL = fft.frequencyMap(buffer.getChannelData(0).slice(0, limit), mapFunc);
-	console.log('processing right channel...');
-	var processedR = fft.frequencyMap(buffer.getChannelData(1).slice(0, limit), mapFunc);
+	var left = e.data.left,
+		right = e.data.right;
 
-	console.log('spectral processing complete');
+	var outputBuffer = context.createBuffer(2, left.length, context.sampleRate);
+	outputBuffer.copyToChannel(left, 0);
+	outputBuffer.copyToChannel(right, 1);
 
-	var outputBuffer = context.createBuffer(2, processedL.length, context.sampleRate);
-	outputBuffer.copyToChannel(processedL.real, 0);
-	outputBuffer.copyToChannel(processedR.real, 1);
-
-	var source = context.createBufferSource();
+	source = context.createBufferSource();
 	source.buffer = outputBuffer;
 	source.loop = true;
 	source.connect(context.destination);
 	source.start();
-}
+}, false);
 
-function mapFunc(obj, i, n){
-	if (i % 10000 === 0){
-		console.log('processed '+i+'/'+n);
-	}
-	var amplitude = Math.sqrt(Math.pow(obj.imag, 2) + Math.pow(obj.real, 2));
-	var phase = Math.PI * 2 * Math.random();
-
-	obj.real = amplitude * Math.cos(phase);
-	obj.imag = amplitude * Math.sin(phase);
+function output(text){
+	var el = document.getElementById('output');
+	el.innerHTML += text + '<br>';
 }
