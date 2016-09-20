@@ -1,12 +1,11 @@
 var fileReader = new FileReader(),
 	context = new AudioContext(),
-	fftWorker = new Worker('js/fft-worker.js');
 	getUserMedia = (navigator.getUserMedia
 					|| navigator.webkitGetUserMedia
 					|| navigator.mozGetUserMedia
 					|| navigator.msGetUserMedia).bind(navigator);
 
-var source;
+var source, fftWorker;
 
 fileReader.onload = function(){
 	reset();
@@ -20,12 +19,18 @@ $(function(){
 	//getUserMedia({ audio: true }, setUpMediaRecorder, function(){});
 });
 
+function spawnWorker(){
+	var worker = new Worker('js/fft-worker.js');
+	worker.onmessage = messageHandler;
+	return worker;
+}
+
 function reset(){
 	if (source){
 		source.stop();
 		source.disconnect();
 	}
-	document.getElementById('output').innerHTML = '';
+	$('#output').empty();
 }
 
 function setUpMediaRecorder(stream){
@@ -76,13 +81,17 @@ function bindFileInput(){
 }
 
 function processBuffer(buffer){
+	if (fftWorker) fftWorker.terminate();
+
+	fftWorker = spawnWorker();
+
 	fftWorker.postMessage({
 		left: buffer.getChannelData(0),
 		right: buffer.getChannelData(1)
 	});
 }
 
-fftWorker.addEventListener('message', function(e){
+function messageHandler(e){
 	if (e.data.type === 'update'){
 		output(e.data.update);
 		return;
@@ -100,7 +109,7 @@ fftWorker.addEventListener('message', function(e){
 	source.loop = true;
 	source.connect(context.destination);
 	source.start();
-}, false);
+}
 
 function output(text){
 	$('#output').text(text);
