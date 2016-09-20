@@ -14,11 +14,11 @@ fileReader.onload = function(){
 	context.decodeAudioData(fileReader.result, processBuffer);
 };
 
-window.onload = function(){
+$(function(){
 	bindFileInput();
 
 	//getUserMedia({ audio: true }, setUpMediaRecorder, function(){});
-};
+});
 
 function reset(){
 	if (source){
@@ -103,6 +103,5 @@ fftWorker.addEventListener('message', function(e){
 }, false);
 
 function output(text){
-	var el = document.getElementById('output');
-	el.innerHTML += text + '<br>';
+	$('#output').text(text);
 }
