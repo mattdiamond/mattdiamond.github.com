@@ -1,4 +1,4 @@
-importScripts('/jsfft/dist/complex_array.js', '/jsfft/dist/fft.js');
+importScripts('jsfft/complex_array.js', 'jsfft/fft.js');
 
 addEventListener('message', function(e) {
 	processData(e.data);
