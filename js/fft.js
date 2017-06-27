@@ -20,9 +20,9 @@ fileReader.onload = function(){
 $(function(){
 	var app = new App();
 
-	bindFileInput();
-	bindControls();
-	setupWavesurfer();
+//	bindFileInput();
+//	bindControls();
+//	setupWavesurfer();
 	//getUserMedia({ audio: true }, setUpMediaRecorder, function(){});
 });
 
@@ -111,9 +111,18 @@ class App {
 	constructor(){
 		this.context = new AudioContext();
 		this.editor = new Editor();
-		this.fileReader = new FileReader();
-
+		this.setupFileReader();
 		this.setupControls();
+	}
+
+	setupFileReader(){
+		this.fileReader = new FileReader();
+		this.fileReader.onload = () => {
+			this.output('decoding...');
+			this.context.decodeAudioData(this.fileReader.result).then(buffer => {
+				this.editor.loadBuffer(buffer);
+			});
+		};
 	}
 
 	setupControls(){
@@ -121,6 +130,22 @@ class App {
 		this.$fileInput.on('change', () => {
 			var file = this.$fileInput[0].files[0];
 			if (file) this.fileReader.readAsArrayBuffer(file);
+		});
+
+		$('[data-action="play-selection"]').click(() => {
+			this.editor.playSelection();
+		});
+
+		$('[data-action="stop-selection"]').click(() => {
+			this.editor.stop();
+		});
+
+		$('[data-action="process-selection"]').click(() => {
+			this.processSelection();
+		});
+
+		$('[data-action="stop-fft-playback"]').click(() => {
+			this.stopBufferSource();
 		});
 	}
 
@@ -148,29 +173,33 @@ class App {
 			return;
 		}
 
-		this.playArrays(e.data.left, e.data.right);
+		this.playFFTOutput(e.data.left, e.data.right);
 	}
 
 	output(text){
 		$('#output').text(text);
 	}
 
-	playArrays(left, right){
+	playFFTOutput(left, right){
 		var context = this.context;
 		var outputBuffer = context.createBuffer(2, left.length, context.sampleRate);
 		outputBuffer.copyToChannel(left, 0);
 		outputBuffer.copyToChannel(right, 0);
 
-		if (this.bufferSource){
-			this.bufferSource.stop();
-			this.bufferSource.disconnect();
-		}
+		this.stopBufferSource();
 
 		this.bufferSource = context.createBufferSource();
 		this.bufferSource.buffer = outputBuffer;
 		this.bufferSource.loop = true;
 		this.bufferSource.connect(context.destination);
 		this.bufferSource.start();
+	}
+
+	stopBufferSource(){
+		if (this.bufferSource){
+			this.bufferSource.stop();
+			this.bufferSource.disconnect();
+		}
 	}
 }
 
@@ -180,20 +209,32 @@ class Editor {
 			container: '#waveform'
 		});
 		this.wavesurfer.enableDragSelection({});
-		this.wavesurfer.on('region-update-end', region => this.onRegionUpdated(region));
+		this.wavesurfer.on('region-update-end', this.onRegionUpdated.bind(this));
 
 		this.selection = this.createSelection();	//init empty selection
+
+		this.$snapToPowerOf2 = $('[data-setting="snap-to-power-of-2"]');
 	}
 
 	createSelection(region){
 		return new Selection(region, this);
 	}
 
-	onRegionUpdated(region){
+	playSelection(){
+		this.selection.play();
+	}
+
+	stop(){
 		this.wavesurfer.stop();
-		if (!this.selection.region === region){
+	}
+
+	onRegionUpdated(region){
+		this.stop();
+		if (region !== this.selection.region){
 			this.selection.remove();
 			this.selection = this.createSelection(region);
+		} else {	//modified existing region
+			this.selection.update();
 		}
 	}
 
@@ -211,6 +252,10 @@ class Editor {
 		var buffer = this.audioBuffer;
 		return index / buffer.length * buffer.duration;
 	}
+
+	get snapToPowerOf2(){
+		return this.$snapToPowerOf2.is(':checked');
+	}
 }
 
 class Selection {
@@ -219,9 +264,19 @@ class Selection {
 		this.editor = editor;
 
 		if (this.region){
-			this.calculateIndexes();
+			this.update();
+		}
+	}
+
+	update(){
+		this.calculateIndexes();
+		if (this.editor.snapToPowerOf2){
 			this.adjustToPowerOf2();
 		}
+	}
+
+	play(){
+		if (this.region) this.region.play();
 	}
 
 	getChannelData(channel){
@@ -236,7 +291,17 @@ class Selection {
 	}
 
 	adjustToPowerOf2(){
-		this.end = this.start + getLowerPowerOf2(this.end - this.start);
+		var origDuration = this.end - this.start,
+			durations = getClosestPowersOf2(origDuration),
+			higherGap = durations.higher - origDuration,
+			lowerGap = origDuration - durations.lower,
+			bufferLength = this.editor.audioBuffer.length;
+
+		if (higherGap < lowerGap && (this.start + durations.higher <= bufferLength)){
+			this.end = this.start + durations.higher;
+		} else {
+			this.end = this.start + durations.lower;
+		}
 		this.region.update({ end: this.editor.getTimeFromIndex(this.end) });
 	}
 
@@ -257,8 +322,11 @@ function playSelection(){
 //	return Math.floor(selection.start / totalDuration * bufferLength)
 //}
 
-function getLowerPowerOf2(number){
-	return Math.pow(2, Math.floor(Math.log2(number)));
+function getClosestPowersOf2(number){
+	return {
+		lower: Math.pow(2, Math.floor(Math.log2(number))),
+		higher: Math.pow(2, Math.ceil(Math.log2(number)))
+	};
 }
 
 function processSelection(){

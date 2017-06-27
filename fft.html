@@ -33,8 +33,9 @@
 <body>
 	<h1>FFT phase randomizer</h1>
 	<div class="instructions">
-		Select a short audio file from your computer<br>
-		(if the FFT is taking forever, try a shorter clip)
+		1) Select an audio file from your computer.<br>
+		2) Select a portion of the waveform to process.<br>
+		3) Click "Process Selection".
 	</div>
 	<input type="file" id="FileInput">
 	<div class="hidden">
@@ -42,9 +43,14 @@
 		<button id="stop">Stop Recording and Process</button>
 	</div>
 	<div id="waveform"></div>
-	<button id="play-selection">Play Selection</button>
-	<button id="process-selection">Process Selection</button>
-	<button id="reset">Reset</button>
+	<input type="checkbox" data-setting="snap-to-power-of-2" checked>
+	<label>Snap duration to closest power of 2 (recommended for faster performance)</label>
+	<div class="buttons">
+		<button data-action="play-selection">Play Selection</button>
+		<button data-action="stop-selection">Stop Selection</button>
+		<button data-action="process-selection">Process Selection</button>
+		<button data-action="stop-fft-playback">Stop FFT playback</button>
+	</div>
 	<div id="output"></div>
 </body>
 </html>
