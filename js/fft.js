@@ -9,11 +9,7 @@ var source, fftWorker;
 
 var wavesurfer;
 
-function setupWavesurfer(){
-	wavesurfer = WaveSurfer.create({
-		container: '#waveform'
-	});
-}
+const WORKER_PATH = 'js/fft-worker.js';
 
 fileReader.onload = function(){
 	reset();
@@ -22,6 +18,8 @@ fileReader.onload = function(){
 };
 
 $(function(){
+	var app = new App();
+
 	bindFileInput();
 	bindControls();
 	setupWavesurfer();
@@ -109,8 +107,158 @@ function processBuffer(buffer){
 	});
 }
 
+class App {
+	constructor(){
+		this.context = new AudioContext();
+		this.editor = new Editor();
+		this.fileReader = new FileReader();
+
+		this.setupControls();
+	}
+
+	setupControls(){
+		this.$fileInput = $('#FileInput');
+		this.$fileInput.on('change', () => {
+			var file = this.$fileInput[0].files[0];
+			if (file) this.fileReader.readAsArrayBuffer(file);
+		});
+	}
+
+	processSelection(){
+		this.spawnFFTWorker();
+
+		var selection = this.editor.selection;
+
+		this.fftWorker.postMessage({
+			left: selection.getChannelData(0),
+			right: selection.getChannelData(1)
+		});
+	}
+
+	spawnFFTWorker(){
+		if (this.fftWorker) this.fftWorker.terminate();
+
+		this.fftWorker = new Worker(WORKER_PATH);
+		this.fftWorker.onmessage = this.workerMessageHandler.bind(this);
+	}
+
+	workerMessageHandler(e){
+		if (e.data.type === 'update'){
+			this.output(e.data.update);
+			return;
+		}
+
+		this.playArrays(e.data.left, e.data.right);
+	}
+
+	output(text){
+		$('#output').text(text);
+	}
+
+	playArrays(left, right){
+		var context = this.context;
+		var outputBuffer = context.createBuffer(2, left.length, context.sampleRate);
+		outputBuffer.copyToChannel(left, 0);
+		outputBuffer.copyToChannel(right, 0);
+
+		if (this.bufferSource){
+			this.bufferSource.stop();
+			this.bufferSource.disconnect();
+		}
+
+		this.bufferSource = context.createBufferSource();
+		this.bufferSource.buffer = outputBuffer;
+		this.bufferSource.loop = true;
+		this.bufferSource.connect(context.destination);
+		this.bufferSource.start();
+	}
+}
+
+class Editor {
+	constructor(){
+		this.wavesurfer = WaveSurfer.create({
+			container: '#waveform'
+		});
+		this.wavesurfer.enableDragSelection({});
+		this.wavesurfer.on('region-update-end', region => this.onRegionUpdated(region));
+
+		this.selection = this.createSelection();	//init empty selection
+	}
+
+	createSelection(region){
+		return new Selection(region, this);
+	}
+
+	onRegionUpdated(region){
+		this.wavesurfer.stop();
+		if (!this.selection.region === region){
+			this.selection.remove();
+			this.selection = this.createSelection(region);
+		}
+	}
+
+	loadBuffer(audioBuffer){
+		this.audioBuffer = audioBuffer;
+		this.wavesurfer.loadDecodedBuffer(this.audioBuffer);
+	}
+
+	getIndexFromTime(time){
+		var buffer = this.audioBuffer;
+		return Math.floor(time / buffer.duration * buffer.length);
+	}
+
+	getTimeFromIndex(index){
+		var buffer = this.audioBuffer;
+		return index / buffer.length * buffer.duration;
+	}
+}
+
+class Selection {
+	constructor(region, editor){
+		this.region = region;
+		this.editor = editor;
+
+		if (this.region){
+			this.calculateIndexes();
+			this.adjustToPowerOf2();
+		}
+	}
+
+	getChannelData(channel){
+		return this.editor.audioBuffer
+				.getChannelData(channel)
+				.subarray(this.start, this.end);
+	}
+
+	calculateIndexes(){
+		this.start = this.editor.getIndexFromTime(this.region.start);
+		this.end = this.editor.getIndexFromTime(this.region.end);
+	}
+
+	adjustToPowerOf2(){
+		this.end = this.start + getLowerPowerOf2(this.end - this.start);
+		this.region.update({ end: this.editor.getTimeFromIndex(this.end) });
+	}
+
+	remove(){
+		if (this.region) this.region.remove();
+	}
+}
+
 function playSelection(){
 	if (selection) selection.play();
+}
+
+//function modifyEnd(selection){
+//	var totalDuration = wavesurfer.getDuration(),
+//		bufferLength = audioBuffer.length,
+//		start =
+//
+//	return Math.floor(selection.start / totalDuration * bufferLength)
+//}
+
+function getLowerPowerOf2(number){
+	return Math.pow(2, Math.floor(Math.log2(number)));
 }
 
 function processSelection(){
@@ -122,6 +270,8 @@ function processSelection(){
 	if (fftWorker) fftWorker.terminate();
 
 	fftWorker = spawnWorker();
+
+	end = start + getLowerPowerOf2(end - start);
 
 	var leftSelection = audioBuffer.getChannelData(0).slice(start, end),
 		rightSelection = audioBuffer.getChannelData(1).slice(start, end);

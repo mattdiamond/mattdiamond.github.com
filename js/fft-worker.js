@@ -36,7 +36,7 @@ function output(text){
 
 function complex2freq(obj){
 	return {
-		amp: Math.sqrt(Math.pow(obj.imag, 2) + Math.pow(obj.real, 2)),
+		amp: Math.sqrt(Math.pow(obj.real, 2) + Math.pow(obj.imag, 2)),
 		phase: Math.atan2(obj.imag, obj.real)
 	};
 }
@@ -62,5 +62,5 @@ function mapFunc(obj, i, n){
 /* the actual transformation */
 
 function transform(bin, i, n){
-	bin.phase = Math.random() * 2 * Math.PI;
+	bin.phase = Math.random() * 2 * Math.PI - Math.PI;
 }
