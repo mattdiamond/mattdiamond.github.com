@@ -7,6 +7,14 @@ var fileReader = new FileReader(),
 
 var source, fftWorker;
 
+var wavesurfer;
+
+function setupWavesurfer(){
+	wavesurfer = WaveSurfer.create({
+		container: '#waveform'
+	});
+}
+
 fileReader.onload = function(){
 	reset();
 	output('decoding...');
@@ -15,7 +23,7 @@ fileReader.onload = function(){
 
 $(function(){
 	bindFileInput();
-
+	setupWavesurfer();
 	//getUserMedia({ audio: true }, setUpMediaRecorder, function(){});
 });
 
@@ -80,14 +88,38 @@ function bindFileInput(){
 	};
 }
 
+var selection, audioBuffer;
+
 function processBuffer(buffer){
+	audioBuffer = buffer;
+
+	wavesurfer.loadDecodedBuffer(buffer);
+	wavesurfer.enableDragSelection({});
+	wavesurfer.on('region-update-end', region => {
+		if (selection) selection.remove();
+		selection = region;
+		processSelection();
+	});
+}
+
+function processSelection(){
+	var totalDuration = wavesurfer.getDuration(),
+		bufferLength = audioBuffer.length,
+		start = Math.floor(selection.start / totalDuration * bufferLength),
+		end = Math.floor(selection.end / totalDuration * bufferLength);
+
 	if (fftWorker) fftWorker.terminate();
 
 	fftWorker = spawnWorker();
 
+	var leftSelection = audioBuffer.getChannelData(0).slice(start, end),
+		rightSelection = audioBuffer.getChannelData(1).slice(start, end);
+
+	console.log('selection size:', leftSelection.length);
+
 	fftWorker.postMessage({
-		left: buffer.getChannelData(0),
-		right: buffer.getChannelData(1)
+		left: leftSelection,
+		right: rightSelection
 	});
 }
 

@@ -1,12 +1,12 @@
-importScripts('/jsfft/lib/complex_array.js', '/jsfft/lib/fft.js');
+importScripts('/jsfft/dist/complex_array.js', '/jsfft/dist/fft.js');
 
 addEventListener('message', function(e) {
 	processData(e.data);
 }, false);
 
 function processData(data){
-	var complexL = new complex_array.ComplexArray(data.left),
-		complexR = new complex_array.ComplexArray(data.right);
+	var complexL = new fft.ComplexArray(data.left),
+		complexR = new fft.ComplexArray(data.right);
 
 	output('starting spectral processing...');
 
@@ -62,5 +62,7 @@ function mapFunc(obj, i, n){
 /* the actual transformation */
 
 function transform(bin, i, n){
-	bin.phase = Math.random() * (2 * Math.PI) - Math.PI;
+	if (Math.random() > 0.1){
+		bin.amp = 0;
+	}
 }
