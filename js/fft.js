@@ -184,7 +184,7 @@ class App {
 		var context = this.context;
 		var outputBuffer = context.createBuffer(2, left.length, context.sampleRate);
 		outputBuffer.copyToChannel(left, 0);
-		outputBuffer.copyToChannel(right, 0);
+		outputBuffer.copyToChannel(right, 1);
 
 		this.stopBufferSource();
 
