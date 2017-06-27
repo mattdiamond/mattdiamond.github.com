@@ -62,7 +62,5 @@ function mapFunc(obj, i, n){
 /* the actual transformation */
 
 function transform(bin, i, n){
-	if (Math.random() > 0.1){
-		bin.amp = 0;
-	}
+	bin.phase = Math.random() * 2 * Math.PI;
 }

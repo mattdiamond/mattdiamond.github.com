@@ -23,6 +23,7 @@ fileReader.onload = function(){
 
 $(function(){
 	bindFileInput();
+	bindControls();
 	setupWavesurfer();
 	//getUserMedia({ audio: true }, setUpMediaRecorder, function(){});
 });
@@ -88,6 +89,12 @@ function bindFileInput(){
 	};
 }
 
+function bindControls(){
+	$('#play-selection').click(playSelection);
+	$('#process-selection').click(processSelection);
+	$('#reset').click(reset);
+}
+
 var selection, audioBuffer;
 
 function processBuffer(buffer){
@@ -96,10 +103,14 @@ function processBuffer(buffer){
 	wavesurfer.loadDecodedBuffer(buffer);
 	wavesurfer.enableDragSelection({});
 	wavesurfer.on('region-update-end', region => {
-		if (selection) selection.remove();
+		wavesurfer.stop();
+		if (selection && selection !== region) selection.remove();
 		selection = region;
-		processSelection();
 	});
+}
+
+function playSelection(){
+	if (selection) selection.play();
 }
 
 function processSelection(){
@@ -135,6 +146,11 @@ function messageHandler(e){
 	var outputBuffer = context.createBuffer(2, left.length, context.sampleRate);
 	outputBuffer.copyToChannel(left, 0);
 	outputBuffer.copyToChannel(right, 1);
+
+	if (source){
+		source.stop();
+		source.disconnect();
+	}
 
 	source = context.createBufferSource();
 	source.buffer = outputBuffer;
