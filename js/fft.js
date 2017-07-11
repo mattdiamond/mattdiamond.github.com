@@ -16,7 +16,7 @@ class App {
 		this.fileReader = new FileReader();
 		this.fileReader.onload = () => {
 			this.output('decoding...');
-			this.context.decodeAudioData(this.fileReader.result).then(buffer => {
+			this.context.decodeAudioData(this.fileReader.result, buffer => {
 				this.editor.loadBuffer(buffer);
 			});
 		};
