@@ -96,6 +96,7 @@ class App {
 		if (this.bufferSource){
 			this.bufferSource.stop();
 			this.bufferSource.disconnect();
+			delete this.bufferSource;
 		}
 	}
 }
