@@ -138,6 +138,7 @@ class Editor {
 
 	loadBuffer(audioBuffer){
 		this.audioBuffer = audioBuffer;
+		this.wavesurfer.empty();
 		this.wavesurfer.loadDecodedBuffer(this.audioBuffer);
 	}
 
