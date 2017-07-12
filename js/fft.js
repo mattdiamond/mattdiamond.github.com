@@ -18,6 +18,7 @@ class App {
 			this.output('decoding...');
 			this.context.decodeAudioData(this.fileReader.result, buffer => {
 				this.editor.loadBuffer(buffer);
+				this.output('ready!');
 			});
 		};
 	}
