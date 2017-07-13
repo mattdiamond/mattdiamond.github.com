@@ -234,7 +234,8 @@ function getMax(array){
 	
 	var max = -Infinity;
 	array.forEach(value => {
-		if (value > max) max = value;
+		var absVal = Math.abs(value);
+		if (absVal > max) max = absVal;
 	});
 	
 	return max;
