@@ -1,7 +1,7 @@
 const WORKER_PATH = 'js/fft-worker.js';
 
 $(function(){
-	var app = new App();
+	window.app = new App();
 });
 
 class App {
@@ -44,6 +44,10 @@ class App {
 
 		$('[data-action="stop-fft-playback"]').click(() => {
 			this.stopBufferSource();
+		});
+		
+		$('[data-action="normalize"]').click(() => {
+			this.editor.normalizeBuffer();	
 		});
 	}
 
@@ -142,6 +146,13 @@ class Editor {
 		this.wavesurfer.empty();
 		this.wavesurfer.loadDecodedBuffer(this.audioBuffer);
 	}
+	
+	normalizeBuffer(){
+		normalize(this.audioBuffer.getChannelData(0));
+		normalize(this.audioBuffer.getChannelData(1));
+		this.wavesurfer.empty();
+		this.wavesurfer.drawBuffer();
+	}
 
 	getIndexFromTime(time){
 		var buffer = this.audioBuffer;
@@ -215,4 +226,23 @@ function getClosestPowersOf2(number){
 		lower: Math.pow(2, Math.floor(Math.log2(number))),
 		higher: Math.pow(2, Math.ceil(Math.log2(number)))
 	};
+}
+
+function getMax(array){
+	//Math.max(...array) can fail on extremely large arrays
+	//so we'll do it via iteration
+	
+	var max = -Infinity;
+	array.forEach(value => {
+		if (value > max) max = value;
+	});
+	
+	return max;
+}
+
+function normalize(arr){
+	var factor = 1 / getMax(arr);
+	for (var i = 0; i < arr.length; i++){
+		arr[i] *= factor;
+	}
 }
