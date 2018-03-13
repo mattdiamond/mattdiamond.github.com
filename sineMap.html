@@ -55,6 +55,11 @@
       // gui.add(settings, 'type', ['scatter3d', 'scattergl'])
       //   .onChange(plot);
 
+      const coordsGUI = gui.addFolder('Starting Coordinate');
+      coordsGUI.add(settings, 'x0').onFinishChange(plot);
+      coordsGUI.add(settings, 'y0').onFinishChange(plot);
+      coordsGUI.open();
+
       const gen = gui.addFolder('Generation');
       gen.add(settings, 'kMin').onFinishChange(plot);
       gen.add(settings, 'kMax').onFinishChange(plot);
@@ -67,11 +72,6 @@
       style.add(settings, 'opacity').onFinishChange(plot);
       style.add(settings, 'markerSize').onFinishChange(plot);
       style.open();
-
-      const coordsGUI = gui.addFolder('Starting Coordinate');
-      coordsGUI.add(settings, 'x0').onFinishChange(plot);
-      coordsGUI.add(settings, 'y0').onFinishChange(plot);
-      coordsGUI.open();
 
       const exportFolder = gui.addFolder('Export Settings');
       exportFolder.add(exportSettings, 'format', ['png', 'jpeg', 'webp', 'svg']);
