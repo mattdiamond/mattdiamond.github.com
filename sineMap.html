@@ -52,8 +52,15 @@
       };
 
       const gui = new dat.GUI();
-      // gui.add(settings, 'type', ['scatter3d', 'scattergl'])
-      //   .onChange(plot);
+      gui.add(settings, 'type', ['scattergl', 'scatter3d'])
+        .onChange(choice => {
+          if (choice === 'scatter3d'){
+            if (kStep.getValue() < 0.01){
+              kStep.setValue(0.01);
+            }
+          }
+          plot();
+        });
 
       const coordsGUI = gui.addFolder('Starting Coordinate');
       coordsGUI.add(settings, 'x0').onFinishChange(plot);
@@ -63,7 +70,7 @@
       const gen = gui.addFolder('Generation');
       gen.add(settings, 'kMin').onFinishChange(plot);
       gen.add(settings, 'kMax').onFinishChange(plot);
-      gen.add(settings, 'kStep').onFinishChange(plot);
+      const kStep = gen.add(settings, 'kStep').onFinishChange(plot);
       gen.add(settings, 'skipIterations').onFinishChange(plot);
       gen.add(settings, 'iterationsPerK').onFinishChange(plot);
       gen.open();
@@ -90,7 +97,7 @@
         const trace = {
           x: [],
           y: [],
-//          z: [],
+          z: [],
           type: settings.type,
           mode: 'markers',
           marker: {
@@ -102,14 +109,15 @@
         for (let k = settings.kMin; k < settings.kMax; k += settings.kStep){
           let coords = { x: settings.x0, y: settings.y0 };
           for (let i = 0; i < settings.skipIterations; i++){
-            // get to limit cycle
             coords = iterate(coords, k);
           }
           for (let i = 0; i < settings.iterationsPerK; i++){
             coords = iterate(coords, k);
             trace.x.push(k);
             trace.y.push(coords.y);
-//            trace.z.push(coords.x);
+            if (settings.type === 'scatter3d') {
+              trace.z.push(coords.x);
+            }
           }
         }
 
