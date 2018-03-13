@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<head>
+  <meta charset='utf-8'>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ 'fast-preview': { disabled: true } });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-AMS_SVG"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.1/dat.gui.min.js"></script>
+  <script type="text/javascript">
+    function iterate (coords, k){
+      return {
+        x: Math.sin(k * (coords.y + coords.x)),
+        y: Math.sin(k * (coords.y - coords.x))
+      };
+    }
+
+    function equals (obj1, obj2){
+      //super hacky but let's just go with it
+      return JSON.stringify(obj1) === JSON.stringify(obj2);
+    }
+
+    function clone (obj){
+      return Object.assign({}, obj);
+    }
+
+    window.onload = function(){
+      const graphDiv = document.getElementById('plot');
+      const settings = {
+        kMin: 0,
+        kMax: 4,
+        kStep: 0.001,
+        skipIterations: 1000,
+        iterationsPerK: 200,
+        type: 'scattergl',
+        opacity: 1,
+        markerSize: 2,
+        x0: 0.5,
+        y0: 0.5
+      };
+
+      const exportSettings = {
+        format: 'png',
+        width: graphDiv.clientWidth,
+        height: graphDiv.clientHeight,
+        filename: 'sineMap'
+      };
+
+      const functions = {
+        Render: plot,
+        'Export Image': download
+      };
+
+      const gui = new dat.GUI();
+      // gui.add(settings, 'type', ['scatter3d', 'scattergl'])
+      //   .onChange(plot);
+
+      const gen = gui.addFolder('Generation');
+      gen.add(settings, 'kMin').onFinishChange(plot);
+      gen.add(settings, 'kMax').onFinishChange(plot);
+      gen.add(settings, 'kStep').onFinishChange(plot);
+      gen.add(settings, 'skipIterations').onFinishChange(plot);
+      gen.add(settings, 'iterationsPerK').onFinishChange(plot);
+      gen.open();
+
+      const style = gui.addFolder('Style');
+      style.add(settings, 'opacity').onFinishChange(plot);
+      style.add(settings, 'markerSize').onFinishChange(plot);
+      style.open();
+
+      const coordsGUI = gui.addFolder('Starting Coordinate');
+      coordsGUI.add(settings, 'x0').onFinishChange(plot);
+      coordsGUI.add(settings, 'y0').onFinishChange(plot);
+      coordsGUI.open();
+
+      const exportFolder = gui.addFolder('Export Settings');
+      exportFolder.add(exportSettings, 'format', ['png', 'jpeg', 'webp', 'svg']);
+      exportFolder.add(exportSettings, 'width');
+      exportFolder.add(exportSettings, 'height');
+      exportFolder.add(exportSettings, 'filename');
+
+      gui.add(functions, 'Export Image');
+      gui.remember(settings);
+
+      let previousSettings = {};
+      function plot(){
+        if (equals(settings, previousSettings)) return;
+        previousSettings = clone(settings);
+
+        const trace = {
+          x: [],
+          y: [],
+//          z: [],
+          type: settings.type,
+          mode: 'markers',
+          marker: {
+            size: settings.markerSize,
+            opacity: settings.opacity
+          }
+        };
+
+        for (let k = settings.kMin; k < settings.kMax; k += settings.kStep){
+          let coords = { x: settings.x0, y: settings.y0 };
+          for (let i = 0; i < settings.skipIterations; i++){
+            // get to limit cycle
+            coords = iterate(coords, k);
+          }
+          for (let i = 0; i < settings.iterationsPerK; i++){
+            coords = iterate(coords, k);
+            trace.x.push(k);
+            trace.y.push(coords.y);
+//            trace.z.push(coords.x);
+          }
+        }
+
+        const layout = {
+          scene: {
+            camera: {
+              eye: { x: -1.25, y: -1.25, z: 1.25 }
+            }
+          },
+          margin: {
+            t: 0
+          }
+        };
+
+        const options = {
+          displayModeBar: false
+        };
+
+        Plotly.newPlot(graphDiv, [trace], layout, options);
+      }
+
+      function download(){
+        Plotly.downloadImage(graphDiv, exportSettings);
+      }
+
+      plot();
+    }
+  </script>
+  <style type="text/css">
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+
+    h1 {
+      margin: 20px;
+      padding: 0px;
+      height: 5%;
+      font-size: 30px;
+      font-family: sans-serif;
+      font-weight: lighter;
+    }
+
+    #formula {
+      font-size: 16px;
+      margin: 0px 10px 10px 50px;
+      position: relative;
+      top: -5px;
+    }
+
+    #plot {
+      height: 95%;
+      width: 100%;
+    }
+
+    .float-left {
+      float: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>
+    <div class='float-left'>Bifurcation Diagram for the Sine map</div>
+    <div id='formula' class='float-left'>
+      <script type='math/tex'>
+        \begin{align}
+        x_{n+1} &= \sin(k(y_n + x_n))\\
+        y_{n+1} &= \sin(k(y_n - x_n))
+        \end{align}
+      </script>
+    </div>
+  </h1>
+  <div id='plot'></div>
+</body>
+
+
+</html>
