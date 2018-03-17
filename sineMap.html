@@ -32,7 +32,7 @@
         kStep: 0.001,
         skipIterations: 1000,
         iterationsPerK: 200,
-        type: 'scattergl',
+        type: 'pointcloud',
         opacity: 1,
         markerSize: 2,
         x0: 0.5,
@@ -52,7 +52,7 @@
       };
 
       const gui = new dat.GUI();
-      gui.add(settings, 'type', ['scattergl', 'scatter3d'])
+      gui.add(settings, 'type', ['pointcloud', 'scattergl', 'scatter3d'])
         .onChange(choice => {
           if (choice === 'scatter3d'){
             if (kStep.getValue() < 0.01){
