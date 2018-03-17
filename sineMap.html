@@ -34,7 +34,7 @@
         iterationsPerK: 200,
         type: 'pointcloud',
         opacity: 1,
-        markerSize: 2,
+        markerSize: 1,
         x0: 0.5,
         y0: 0.5
       };
@@ -102,6 +102,7 @@
           mode: 'markers',
           marker: {
             size: settings.markerSize,
+            sizemin: settings.markerSize,
             opacity: settings.opacity
           }
         };
