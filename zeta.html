@@ -35,13 +35,9 @@
 			this.im = 0;
 			this.imaginaryRate = 0.02;
 			this.paused = false;
-			this.strokeColor = '#000000';
-			this.strokeWidth = 1;
-			this.paused = false;
 			this.reset = function(){
 				this.im = 0;
 			};
-			this.points = [];
 			this.path = new Path({ strokeColor: 'black'});
 		}
 
@@ -50,20 +46,21 @@
 			view.onFrame = () => {
 				this.path.clear();
 				this.path.add(view.center);
-				this.path.strokeColor = this.strokeColor;
-				this.path.strokeWidth = this.strokeWidth;
-				let angle = 0;
 				const max = Math.max(this.im / 3, 500);
+
+				// update UI
 				document.getElementById('sums-count').innerText = max.toFixed(0);
 				document.getElementById('equation').innerText = `${this.re} + ${this.im.toFixed(3)}i`;
-				const points = [];
+
+				// draw partial sums as an angle path
+				let angle = 0;
 				for (let n = 2; n < max; n++) {
 					const point = new Point({
-						angle: -angle * (180 / Math.PI),
+						angle: angle * (180 / Math.PI),
 						length: 100 * ((n - 1) ** -this.re)
 					});
 					this.path.lineBy(point);
-					angle += this.im * Math.log(1 - 1/n);
+					angle -= this.im * Math.log(1 - 1/n);
 				}
 				if (!this.paused) {
 					this.im += this.imaginaryRate;
