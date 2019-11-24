@@ -25,7 +25,7 @@
 			//set up GUI
 			const gui = new dat.GUI();
 			gui.add(fractal, 're');
-			gui.add(fractal, 'imaginaryRate', 0, 1).step(0.001);
+			gui.add(fractal, 'imaginaryRate', 0, 0.5).step(0.001);
 			gui.add(fractal, 'paused');
 			gui.add(fractal, 'reset');
 		}
