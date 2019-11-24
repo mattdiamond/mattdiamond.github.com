@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Riemann Zeta partial sums</title>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.2/paper-core.min.js"></script>
+	<script type="text/javascript">
+		function init(){
+			setUpPaper();
+			initFractal();
+		}
+
+		function setUpPaper(){
+			myCanvas.width = window.innerWidth;
+			myCanvas.height = window.innerHeight;
+			paper.install(window);
+			paper.setup('myCanvas');
+		}
+
+		function initFractal(){
+			window.fractal = new Fractal();
+			fractal.draw();
+
+			//set up GUI
+			const gui = new dat.GUI();
+			gui.add(fractal, 're');
+			gui.add(fractal, 'imaginaryRate', 0, 1).step(0.001);
+			gui.add(fractal, 'paused');
+			gui.add(fractal, 'reset');
+		}
+
+		function Fractal(){
+			this.re = 0.5;
+			this.imaginaryRate = 0.02;
+			this.paused = false;
+			this.strokeColor = '#000000';
+			this.strokeWidth = 1;
+			this.paused = false;
+			this.reset = function(){
+				this.path.remove();
+				this.draw();
+			};
+			this.points = [];
+			this.path = new Path({ strokeColor: 'black'});
+		}
+
+		Fractal.prototype.draw = function(){
+			view.zoom = 1;
+			let im = 0;
+			view.onFrame = () => {
+				if (this.paused) return;
+				this.path.clear();
+				this.path.add(view.center);
+				this.path.strokeColor = this.strokeColor;
+				this.path.strokeWidth = this.strokeWidth;
+				let angle = 0;
+				const max = Math.max(im / 3, 500);
+				document.getElementById('sums-count').innerText = max.toFixed(0);
+				document.getElementById('equation').innerText = `${this.re} + ${im.toFixed(3)}i`;
+				const points = [];
+				for (let n = 2; n < max; n++) {
+					const point = new Point({
+						angle: -angle * (180 / Math.PI),
+						length: 100 * ((n - 1) ** -this.re)
+					});
+					this.path.lineBy(point);
+					angle += im * Math.log(1 - 1/n);
+				}
+				im += this.imaginaryRate;
+			};
+		};
+
+		window.onload = init;
+	</script>
+	<style type="text/css">
+		html, body {
+			height: 100%;
+			width: 100%;
+			margin: 0;
+			padding: 0;
+		}
+
+		canvas {
+			float: left;
+		}
+
+		.info {
+			font-family: 'Helvetica Neue', Helvetica, sans-serif;
+			font-weight: 300;
+			font-size: 20px;
+			position: absolute;
+			top: 0;
+			left: 0;
+			padding: 10px;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="myCanvas"></canvas>
+	<div class="info">
+		First <span id='sums-count'></span> partial sums of &zeta;(<span id='equation'></span>)
+	</div>
+</body>
+</html>
