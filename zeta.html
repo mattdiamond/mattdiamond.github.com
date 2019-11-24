@@ -50,7 +50,7 @@
 
 				// update UI
 				document.getElementById('sums-count').innerText = max.toFixed(0);
-				document.getElementById('equation').innerText = `${this.re} + ${this.im.toFixed(3)}i`;
+				document.getElementById('equation').innerHTML = `${this.re} + ${this.im.toFixed(2)}i`;
 
 				// draw partial sums as an angle path
 				let angle = 0;
