@@ -8,7 +8,7 @@
 	<script type="text/javascript">
 		function init(){
 			setUpPaper();
-			initFractal();
+			initZeta();
 		}
 
 		function setUpPaper(){
@@ -18,21 +18,21 @@
 			paper.setup('myCanvas');
 		}
 
-		function initFractal(){
-			window.fractal = new Fractal();
+		function initZeta(){
+			window.zeta = new Zeta();
 
 			//set up GUI
 			const gui = new dat.GUI();
-			gui.add(fractal, 're');
-			fractal.imController = gui.add(fractal, 'im').step(0.001);
-			gui.add(fractal, 'imRate').step(0.001);
-			gui.add(fractal, 'animate');
-			gui.add(fractal, 'reset');
+			gui.add(zeta, 're');
+			zeta.imController = gui.add(zeta, 'im').step(0.001);
+			gui.add(zeta, 'imRate').step(0.001);
+			gui.add(zeta, 'animate');
+			gui.add(zeta, 'reset');
 
-			fractal.draw();
+			zeta.draw();
 		}
 
-		function Fractal(){
+		function Zeta(){
 			this.re = 0.5;
 			this.im = 0;
 			this.imRate = 0.02;
@@ -43,7 +43,7 @@
 			this.path = new Path({ strokeColor: 'black'});
 		}
 
-		Fractal.prototype.draw = function(){
+		Zeta.prototype.draw = function(){
 			view.zoom = 1;
 			view.onFrame = () => {
 				this.path.clear();
