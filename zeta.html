@@ -28,6 +28,8 @@
 			zeta.imController = gui.add(zeta, 'im').step(0.001);
 			gui.add(zeta, 'imRate').step(0.001);
 			gui.add(zeta, 'animate');
+			gui.add(zeta, 'showPoints');
+			gui.add(zeta, 'showLines');
 			gui.add(zeta, 'reset');
 
 			zeta.draw();
@@ -38,19 +40,21 @@
 			this.im = 0;
 			this.imRate = 0.02;
 			this.animate = true;
+			this.showPoints = false;
+			this.showLines = true;
 			this.reset = function(){
 				this.imController.setValue(0);
 			};
-			this.path = new Path({
-				strokeColor: 'black',
-				strokeWidth: 0.01
-			});
 		}
 
 		Zeta.prototype.draw = function(){
 			view.onFrame = () => {
-				this.path.clear();
-				this.path.add(view.center);
+				project.activeLayer.clear();
+				const path = new Path({
+					strokeColor: 'black',
+					strokeWidth: this.showLines * 0.01
+				});
+				path.add(view.center);
 
 				const max = Math.max(Math.floor(this.im / 3), 250);
 				document.getElementById('sums-count').innerText = max;
@@ -58,11 +62,18 @@
 				// draw partial sums as an angle path
 				let angle = 0;
 				for (let n = 1; n <= max; n++) {
-					const point = new Point({
+					// draw line relative to current point
+					path.lineBy(new Point({
 						angle: radToDeg(angle),
 						length: n ** -this.re
-					});
-					this.path.lineBy(point);
+					}));
+					if (this.showPoints) {
+						new Shape.Circle({
+							center: path.lastSegment.point,
+							radius: 0.02,
+							fillColor: 'black'
+						});
+					}
 					angle += this.im * Math.log(1 + 1/n);
 				}
 				if (this.animate) {
