@@ -49,18 +49,18 @@
 				this.path.clear();
 				this.path.add(view.center);
 
-				const max = Math.max(this.im / 3, 250);
-				document.getElementById('sums-count').innerText = Math.floor(max);
+				const max = Math.max(Math.floor(this.im / 3), 250);
+				document.getElementById('sums-count').innerText = max;
 
 				// draw partial sums as an angle path
 				let angle = 0;
-				for (let n = 2; n < max; n++) {
+				for (let n = 1; n <= max; n++) {
 					const point = new Point({
-						angle: angle * (180 / Math.PI),
-						length: 100 * ((n - 1) ** -this.re)
+						angle: radToDeg(angle),
+						length: 100 * (n ** -this.re)
 					});
 					this.path.lineBy(point);
-					angle -= this.im * Math.log(1 - 1/n);
+					angle += this.im * Math.log(1 + 1/n);
 				}
 				if (this.animate) {
 					this.im += this.imRate;
@@ -68,6 +68,10 @@
 				}
 			};
 		};
+
+		function radToDeg (angle) {
+			return angle * (180 / Math.PI);
+		}
 
 		window.onload = init;
 	</script>
