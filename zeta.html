@@ -100,6 +100,12 @@
 					strokeColor: '#ddd',
 					strokeWidth: x === 0 ? 3 : 1
 				});
+				new PointText({
+					content: x,
+					point: [xCenter + x * SCALE_FACTOR + 5, view.bounds.height / 2 + 15],
+					fontSize: 12,
+					fillColor: '#777'
+				});
 			}
 
 			const yCenter = view.bounds.height / 2;
@@ -111,6 +117,15 @@
 					strokeColor: '#ddd',
 					strokeWidth: y === 0 ? 3 : 1
 				});
+				if (y !== 0) {
+					new PointText({
+						content: -y + 'i',
+						point: [view.bounds.width / 2 - 5, yCenter + y * SCALE_FACTOR + 14],
+						fontSize: 12,
+						fillColor: '#777',
+						justification: 'right'
+					});
+				}
 			}
 
 			return project.activeLayer;
