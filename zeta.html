@@ -6,6 +6,8 @@
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.2/paper-core.min.js"></script>
 	<script type="text/javascript">
+		const SCALE_FACTOR = 100;
+
 		function init(){
 			setUpPaper();
 			initZeta();
@@ -16,7 +18,6 @@
 			myCanvas.height = window.innerHeight;
 			paper.install(window);
 			paper.setup('myCanvas');
-			view.zoom = 100;
 		}
 
 		function initZeta(){
@@ -30,6 +31,7 @@
 			gui.add(zeta, 'animate');
 			gui.add(zeta, 'showPoints');
 			gui.add(zeta, 'showLines');
+			gui.add(zeta.gridLayer, 'visible').name('showGrid');
 			gui.add(zeta, 'reset');
 
 			zeta.draw();
@@ -38,23 +40,32 @@
 		function Zeta(){
 			this.re = 0.5;
 			this.im = 0;
-			this.imRate = 0.02;
+			this.imRate = 1;
 			this.animate = true;
 			this.showPoints = false;
 			this.showLines = true;
+			this.gridLayer = drawGrid();
 			this.reset = function(){
 				this.imController.setValue(0);
 			};
 		}
 
 		Zeta.prototype.draw = function(){
-			view.onFrame = () => {
+			new Layer();
+			view.onFrame = e => {
 				project.activeLayer.clear();
+
 				const path = new Path({
 					strokeColor: 'black',
-					strokeWidth: this.showLines * 0.01
+					strokeWidth: 1,
+					visible: this.showLines
 				});
 				path.add(view.center);
+
+				if (this.animate) {
+					this.im += this.imRate * e.delta;
+					this.imController.updateDisplay();
+				}
 
 				const max = Math.max(Math.floor(this.im / 3), 250);
 				document.getElementById('sums-count').innerText = max;
@@ -65,23 +76,45 @@
 					// draw line relative to current point
 					path.lineBy(new Point({
 						angle: radToDeg(angle),
-						length: n ** -this.re
+						length: n ** -this.re * SCALE_FACTOR
 					}));
 					if (this.showPoints) {
 						new Shape.Circle({
 							center: path.lastSegment.point,
-							radius: 0.02,
+							radius: 2,
 							fillColor: 'black'
 						});
 					}
 					angle += this.im * Math.log(1 + 1/n);
 				}
-				if (this.animate) {
-					this.im += this.imRate;
-					this.imController.updateDisplay();
-				}
 			};
 		};
+
+		function drawGrid () {
+			const xCenter = view.bounds.width / 2;
+			const xCount = Math.floor(view.bounds.width / SCALE_FACTOR);
+			for (let x = -xCount; x < xCount; x++){
+				new Path.Line({
+					from: [xCenter + x * SCALE_FACTOR, 0],
+					to: [xCenter + x * SCALE_FACTOR, view.bounds.height],
+					strokeColor: '#ddd',
+					strokeWidth: x === 0 ? 3 : 1
+				});
+			}
+
+			const yCenter = view.bounds.height / 2;
+			const yCount = Math.floor(view.bounds.height / SCALE_FACTOR);
+			for (let y = -yCount; y < yCount; y++) {
+				new Path.Line({
+					from: [0, yCenter + y * SCALE_FACTOR],
+					to: [view.bounds.width, yCenter + y * SCALE_FACTOR],
+					strokeColor: '#ddd',
+					strokeWidth: y === 0 ? 3 : 1
+				});
+			}
+
+			return project.activeLayer;
+		}
 
 		function radToDeg (angle) {
 			return angle * (180 / Math.PI);
