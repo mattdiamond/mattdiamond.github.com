@@ -2,11 +2,13 @@
 <html>
 <head>
 	<meta charset="utf-8">
+	<meta name="google" content="notranslate">
 	<title>Riemann Zeta partial sums</title>
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.2/paper-core.min.js"></script>
 	<script type="text/javascript">
 		const SCALE_FACTOR = 100;
+		const DEFAULT_N = 200;
 
 		function init(){
 			setUpPaper();
@@ -21,20 +23,11 @@
 		}
 
 		function initZeta(){
-			window.zeta = new Zeta();
+			const zeta = window.zeta = new Zeta();
+			zeta.initGUI();
 
-			//set up GUI
-			const gui = new dat.GUI();
-			gui.add(zeta, 're');
-			zeta.imController = gui.add(zeta, 'im').step(0.001);
-			gui.add(zeta, 'imRate').step(0.001);
-			gui.add(zeta, 'animate');
-			gui.add(zeta, 'showPoints');
-			gui.add(zeta, 'showLines');
-			gui.add(zeta.gridLayer, 'visible').name('showGrid');
-			gui.add(zeta, 'reset');
-
-			zeta.draw();
+			new Layer();
+			zeta.initOnFrame();
 		}
 
 		function Zeta(){
@@ -42,52 +35,105 @@
 			this.im = 0;
 			this.imRate = 1;
 			this.animate = true;
+			this.N = DEFAULT_N;
+			this.autoAdjustN = true;
 			this.showPoints = false;
 			this.showLines = true;
 			this.gridLayer = drawGrid();
-			this.reset = function(){
-				this.imController.setValue(0);
-			};
 		}
 
-		Zeta.prototype.draw = function(){
-			new Layer();
+		Zeta.prototype.initGUI = function () {
+			const needsRedraw = [];
+			const gui = new dat.GUI();
+
+			const paramsGUI = gui.addFolder('parameters');
+			needsRedraw.push(paramsGUI.add(this, 're'));
+			this.imController = paramsGUI.add(this, 'im').step(0.001);
+			this.NController = paramsGUI.add(this, 'N').step(1);
+			needsRedraw.push(this.imController, this.NController);
+			const NControllerInput = this.NController.__input;
+			NControllerInput.setAttribute('disabled', '');
+			const autoAdjustController = paramsGUI.add(this, 'autoAdjustN');
+			paramsGUI.open();
+
+			const animationGUI = gui.addFolder('animation');
+			animationGUI.add(this, 'animate');
+			animationGUI.add(this, 'imRate').step(0.001);
+			animationGUI.open();
+
+			const drawGUI = gui.addFolder('rendering');
+			needsRedraw.push(
+				drawGUI.add(this, 'showPoints'),
+				drawGUI.add(this, 'showLines')
+			);
+			drawGUI.add(this.gridLayer, 'visible').name('showGrid');
+			drawGUI.open();
+
+			this.imController.onFinishChange(() => {
+				if (this.autoAdjustN) {
+					this.adjustN();
+				}
+			});
+
+			autoAdjustController.onChange(autoAdjust => {
+				if (autoAdjust) {
+					NControllerInput.setAttribute('disabled', '');
+					this.adjustN();
+				} else {
+					NControllerInput.removeAttribute('disabled');
+				}
+			});
+
+			needsRedraw.forEach(c => c.onChange(() => {
+				if (!this.animate) this.draw();
+			}));
+		}
+
+		Zeta.prototype.adjustN = function () {
+			this.NController.setValue(Math.max(Math.floor(this.im / 3), DEFAULT_N));
+		}
+
+		Zeta.prototype.initOnFrame = function () {
 			view.onFrame = e => {
-				project.activeLayer.clear();
+				if (!this.animate) return;
 
-				const path = new Path({
-					strokeColor: 'black',
-					strokeWidth: 1,
-					visible: this.showLines
-				});
-				path.add(view.center);
+				this.imController.setValue(
+					this.im + this.imRate * e.delta
+				);
+				if (this.autoAdjustN) this.adjustN();
 
-				if (this.animate) {
-					this.im += this.imRate * e.delta;
-					this.imController.updateDisplay();
-				}
-
-				const max = Math.max(Math.floor(this.im / 3), 250);
-				document.getElementById('sums-count').innerText = max;
-
-				// draw partial sums as an angle path
-				let angle = 0;
-				for (let n = 1; n <= max; n++) {
-					// draw line relative to current point
-					path.lineBy(new Point({
-						angle: radToDeg(angle),
-						length: n ** -this.re * SCALE_FACTOR
-					}));
-					if (this.showPoints) {
-						new Shape.Circle({
-							center: path.lastSegment.point,
-							radius: 2,
-							fillColor: 'black'
-						});
-					}
-					angle += this.im * Math.log(1 + 1/n);
-				}
+				this.draw();
 			};
+		};
+
+		Zeta.prototype.draw = function () {
+			project.activeLayer.clear();
+
+			const path = new Path({
+				strokeColor: 'black',
+				strokeWidth: 1,
+				visible: this.showLines
+			});
+			path.add(view.center);
+
+			// draw partial sums as an angle path
+			let angle = 0;
+			for (let n = 1; n <= this.N; n++) {
+				// draw line relative to current point
+				const length = n ** -this.re * SCALE_FACTOR;
+				path.lineBy(
+					Math.cos(angle) * length,
+					Math.sin(angle) * length
+				);
+				if (this.showPoints) {
+					new Shape.Circle({
+						center: path.lastSegment.point,
+						radius: 2,
+						fillColor: 'black'
+					});
+				}
+				angle += this.im * Math.log1p(1/n);
+			}
 		};
 
 		function drawGrid () {
@@ -131,10 +177,6 @@
 			return project.activeLayer;
 		}
 
-		function radToDeg (angle) {
-			return angle * (180 / Math.PI);
-		}
-
 		window.onload = init;
 	</script>
 	<style type="text/css">
@@ -158,15 +200,16 @@
 			left: 0;
 			padding: 10px;
 		}
+
+		[disabled] {
+			opacity: 0.75;
+		}
 	</style>
 </head>
 <body>
 	<canvas id='myCanvas'></canvas>
 	<div class='info'>
-		First <span id='sums-count'></span> partial sums of the
-		<a href='https://en.wikipedia.org/wiki/Riemann_zeta_function' target='_blank'>
-			Riemann zeta function
-		</a>
+		<a href='https://en.wikipedia.org/wiki/Riemann_zeta_function' target='_blank'>Riemann zeta function</a> partial sums explorer
 	</div>
 </body>
 </html>
