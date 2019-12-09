@@ -116,11 +116,10 @@
 			});
 			path.add(view.center);
 
-			// draw partial sums as an angle path
-			let angle = 0;
 			for (let n = 1; n <= this.N; n++) {
 				// draw line relative to current point
 				const length = n ** -this.re * SCALE_FACTOR;
+				const angle = this.im * Math.log(n);
 				path.lineBy(
 					Math.cos(angle) * length,
 					Math.sin(angle) * length
@@ -132,7 +131,6 @@
 						fillColor: 'black'
 					});
 				}
-				angle += this.im * Math.log1p(1/n);
 			}
 		};
 
