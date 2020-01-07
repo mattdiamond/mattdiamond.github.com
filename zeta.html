@@ -90,7 +90,10 @@
 		}
 
 		Zeta.prototype.adjustN = function () {
-			this.NController.setValue(Math.max(Math.floor(this.im / 3), DEFAULT_N));
+			this.NController.setValue(Math.max(
+				Math.floor(Math.abs(this.im) / Math.PI),
+				DEFAULT_N
+			));
 		}
 
 		Zeta.prototype.initOnFrame = function () {
